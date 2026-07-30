@@ -1,0 +1,17 @@
+{
+  "name": "innow/attendance-system",
+  "description": "INNOW Digital Attendance Tracking System",
+  "type": "project",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Innow\\": "src/"
+    }
+  },
+  "require": {
+    "php": ">=8.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5"
+  }
+}
