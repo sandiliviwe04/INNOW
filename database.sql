@@ -1,5 +1,5 @@
 -- ====================================================================
--- INNOW Digital Attendance Tracking System - MySQL Database Dump
+-- INNOW Digital Attendance Tracking System - MySQL Database Schema
 -- Compatible with MySQL Workbench 8.x, phpMyAdmin, and MySQL Server 5.7+ / 8.0+
 -- ====================================================================
 
@@ -28,7 +28,7 @@ CREATE TABLE `users` (
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_users_email` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------------------
 -- Table structure for `attendance_records`
@@ -44,7 +44,7 @@ CREATE TABLE `attendance_records` (
   PRIMARY KEY (`id`),
   KEY `fk_attendance_user` (`user_id`),
   CONSTRAINT `fk_attendance_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------------------
 -- Table structure for `sessions`
@@ -58,27 +58,44 @@ CREATE TABLE `sessions` (
   PRIMARY KEY (`id`),
   KEY `fk_sessions_user` (`user_id`),
   CONSTRAINT `fk_sessions_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------------------
--- Seed Data for `users`
+-- Table structure for `leave_requests`
 -- --------------------------------------------------------------------
-INSERT INTO `users` (`id`, `name`, `email`, `pin`, `role`, `department`, `phone`, `emergency_contact`, `status`, `avatar_url`, `qr_code`) VALUES
-('STF-1001', 'Admin Supervisor', 'admin@innow.com', '1001', 'System Administrator', 'Operations & IT', '+27 21 696 4157', 'INNOW Operations Hotline: +27 82 000 0000', 'ONSITE', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', 'INNOW-QR-1001-ADMIN'),
-('STF-1002', 'Lindiwe Dlamini', 'lindiwe.d@innow.com', '1002', 'Lead Software Engineer', 'Software Engineering', '+27 82 345 6789', 'Sipho Dlamini (Spouse): +27 82 111 2222', 'ONSITE', 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150', 'INNOW-QR-1002-LINDIWE'),
-('STF-1003', 'Kagiso Mokoena', 'kagiso.m@innow.com', '1003', 'UX Designer & Researcher', 'Design & UX', '+27 83 456 7890', 'Nomsa Mokoena (Mother): +27 83 222 3333', 'ONSITE', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', 'INNOW-QR-1003-KAGISO'),
-('STF-1004', 'Tariq Al-Mansoor', 'tariq.a@innow.com', '1004', 'DevOps & Cloud Specialist', 'Infrastructure', '+27 84 567 8901', 'Fatima Al-Mansoor (Sister): +27 84 333 4444', 'BREAK', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', 'INNOW-QR-1004-TARIQ'),
-('STF-1005', 'Chiamaka Nwosu', 'chiamaka.n@innow.com', '1005', 'Data Scientist', 'Analytics & AI', '+27 82 678 9012', 'Obinna Nwosu (Brother): +27 82 444 5555', 'OFFSITE', 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150', 'INNOW-QR-1005-CHIAMAKA'),
-('STF-1006', 'Devon Van Der Merwe', 'devon.vdm@innow.com', '1006', 'QA Automation Lead', 'Quality Assurance', '+27 83 789 0123', 'Annelize Van Der Merwe: +27 83 555 6666', 'OFFSITE', 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150', 'INNOW-QR-1006-DEVON');
+DROP TABLE IF EXISTS `leave_requests`;
+
+CREATE TABLE `leave_requests` (
+  `id` VARCHAR(50) NOT NULL,
+  `user_id` VARCHAR(50) NOT NULL,
+  `leave_type` VARCHAR(50) NOT NULL,
+  `start_date` DATE NOT NULL,
+  `end_date` DATE NOT NULL,
+  `days_requested` INT NOT NULL,
+  `reason` TEXT DEFAULT NULL,
+  `status` VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+  `reviewed_by` VARCHAR(50) DEFAULT NULL,
+  `reviewed_at` DATETIME DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_leave_user` (`user_id`),
+  CONSTRAINT `fk_leave_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------------------
--- Seed Data for `attendance_records`
+-- Table structure for `announcements`
 -- --------------------------------------------------------------------
-INSERT INTO `attendance_records` (`id`, `user_id`, `action`, `timestamp`, `method`, `synced_to_db`, `notes`) VALUES
-('LOG-9001', 'STF-1001', 'CLOCK_IN', NOW() - INTERVAL 4 HOUR, 'PIN', 1, 'Morning Shift Check-in'),
-('LOG-9002', 'STF-1002', 'CLOCK_IN', NOW() - INTERVAL 3 HOUR, 'QR', 1, 'Main Front Gate Camera Scanner'),
-('LOG-9003', 'STF-1003', 'CLOCK_IN', NOW() - INTERVAL 2 HOUR, 'BUTTON', 1, 'Web One-Click Check-in'),
-('LOG-9004', 'STF-1004', 'CLOCK_IN', NOW() - INTERVAL 1 HOUR, 'QR', 1, 'Front Gate Camera Scanner'),
-('LOG-9005', 'STF-1004', 'BREAK_START', NOW() - INTERVAL 30 MINUTE, 'BUTTON', 1, 'Tea Break');
+DROP TABLE IF EXISTS `announcements`;
 
--- End of INNOW MySQL Dump
+CREATE TABLE `announcements` (
+  `id` VARCHAR(50) NOT NULL,
+  `user_id` VARCHAR(50) NOT NULL,
+  `title` VARCHAR(255) NOT NULL,
+  `message` TEXT NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_announcement_user` (`user_id`),
+  CONSTRAINT `fk_announcement_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- End of INNOW MySQL Schema

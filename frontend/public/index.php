@@ -204,6 +204,7 @@ $router->get('/api/dashboard/summary', [\Innow\Controllers\DashboardController::
 $router->get('/api/staff', [\Innow\Controllers\UserController::class, 'index']);
 $router->post('/api/staff/add', [\Innow\Controllers\UserController::class, 'store']);
 $router->post('/api/staff/remove', [\Innow\Controllers\UserController::class, 'destroy']);
+$router->post('/api/staff/reset-pin', [\Innow\Controllers\UserController::class, 'resetPin']);
 $router->get('/api/leaves', [\Innow\Controllers\LeaveController::class, 'index']);
 $router->post('/api/leaves', [\Innow\Controllers\LeaveController::class, 'store']);
 $router->post('/api/leaves/update', [\Innow\Controllers\LeaveController::class, 'update']);

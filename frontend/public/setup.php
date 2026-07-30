@@ -1,0 +1,102 @@
+<?php
+require __DIR__ . '/index.php';
+
+use Innow\Config\Database;
+use Innow\Models\User;
+
+$db = Database::getConnection();
+$userCount = $db->query('SELECT COUNT(*) as cnt FROM users')->fetch()['cnt'];
+
+if ($userCount > 0) {
+    if (session_status() === PHP_SESSION_NONE) session_start();
+    header('Location: /login');
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $pin = trim($_POST['pin'] ?? '');
+    $role = trim($_POST['role'] ?? 'System Administrator');
+    $department = trim($_POST['department'] ?? 'Operations');
+
+    $errors = [];
+    if (strlen($name) < 2) $errors[] = 'Name must be at least 2 characters.';
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Valid email required.';
+    if (!preg_match('/^\d{4}$/', $pin)) $errors[] = 'PIN must be exactly 4 digits.';
+
+    $existing = User::findByEmail($email);
+    if ($existing) $errors[] = 'Email already exists.';
+
+    if (empty($errors)) {
+        $user = User::create(compact('name', 'email', 'pin', 'role', 'department'));
+        if ($user) {
+            header('Location: /login?setup=success');
+            exit;
+        }
+        $errors[] = 'Failed to create user.';
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-zinc-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INNOW — Initial Setup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+</head>
+<body class="h-full bg-zinc-50 flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white p-8 rounded-2xl border border-zinc-200 shadow-xl space-y-6">
+        <div class="text-center">
+            <div class="mx-auto w-12 h-12 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-md mb-3">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            </div>
+            <h1 class="text-2xl font-extrabold text-zinc-900">INNOW Setup</h1>
+            <p class="text-xs text-zinc-500 mt-1">Create the first admin account to get started.</p>
+        </div>
+
+        <?php if (!empty($errors)): ?>
+        <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-xs text-red-800 space-y-1">
+            <?php foreach ($errors as $error): ?><div><?= htmlspecialchars($error) ?></div><?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+
+        <form method="POST" class="space-y-4 text-xs">
+            <div>
+                <label class="block font-bold text-zinc-700 uppercase mb-1">Full Name</label>
+                <input type="text" name="name" required placeholder="e.g. Thabo Mokoena" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+            <div>
+                <label class="block font-bold text-zinc-700 uppercase mb-1">Email Address</label>
+                <input type="email" name="email" required placeholder="thabo.m@innow.com" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+            <div>
+                <label class="block font-bold text-zinc-700 uppercase mb-1">4-Digit PIN</label>
+                <input type="text" name="pin" maxlength="4" required placeholder="1234" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500 text-center font-mono text-lg tracking-widest">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-bold text-zinc-700 uppercase mb-1">Role</label>
+                    <select name="role" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
+                        <option>System Administrator</option>
+                        <option>Operations Manager</option>
+                        <option>Staff Member</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-zinc-700 uppercase mb-1">Department</label>
+                    <input type="text" name="department" value="Operations" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
+                </div>
+            </div>
+            <button type="submit" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all cursor-pointer">
+                Create Admin Account
+            </button>
+        </form>
+
+        <p class="text-[10px] text-zinc-400 text-center">This page only appears when no users exist. After setup, it redirects to login.</p>
+    </div>
+</body>
+</html>

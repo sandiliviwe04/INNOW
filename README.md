@@ -61,11 +61,15 @@ APP_URL=http://localhost:8000
 APP_SECRET=innow_secret_key_2026
 ```
 
-### 3. Import Database
+### 3. Import Database Schema
 
 ```bash
-mysql -u root -p innow_db < database.sql
+mysql -u root -pKwaNomaLiv24! innow_db < database.sql
 ```
+
+> **Note:** `database.sql` contains **only the schema**, no seed data. All staff and attendance records should be created through the application UI.
+
+### 3b. (Optional) Clean Up Seed Data
 
 Or use **phpMyAdmin**: create `innow_db`, then import `database.sql`.
 

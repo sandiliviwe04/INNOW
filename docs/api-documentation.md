@@ -186,6 +186,34 @@ Remove a staff member. Admin only.
 }
 ```
 
+### POST /api/staff/reset-pin
+Reset a staff member's PIN. Admin only.
+
+**Auth required:** Yes (admin only)  
+**CSRF required:** Yes
+
+**Request body:**
+```json
+{
+  "id": "STF-1002",
+  "pin": "1234"
+}
+```
+
+- `pin` is optional. If omitted, a random 4-digit PIN is generated.
+- The new PIN is returned in the response and should be communicated to the staff member securely.
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "PIN reset successfully.",
+  "data": {
+    "pin": "4829"
+  }
+}
+```
+
 ---
 
 ## Leave Requests

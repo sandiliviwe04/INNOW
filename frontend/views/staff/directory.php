@@ -71,6 +71,10 @@ require __DIR__ . '/../partials/nav.php';
                             <i data-lucide="qr-code" class="w-3.5 h-3.5"></i>
                             <span>Digital Badge Pass</span>
                         </button>
+                        <button data-staff-id="<?= htmlspecialchars($stf['id']) ?>" data-staff-name="<?= htmlspecialchars($stf['name']) ?>" class="reset-pin-btn px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs">
+                            <i data-lucide="key-round" class="w-3.5 h-3.5"></i>
+                            <span>Reset PIN</span>
+                        </button>
                         <button data-staff-id="<?= htmlspecialchars($stf['id']) ?>" data-staff-name="<?= htmlspecialchars($stf['name']) ?>" class="remove-staff-btn px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs">
                             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                             <span>Remove</span>
@@ -169,6 +173,29 @@ require __DIR__ . '/../partials/nav.php';
     </div>
 </div>
 
+<!-- Reset PIN Modal -->
+<div id="reset-pin-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="bg-white border border-zinc-200 rounded-2xl max-w-md w-full p-6 shadow-xl space-y-6">
+        <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
+            <h3 class="text-lg font-bold text-zinc-900">Reset PIN</h3>
+            <button onclick="closeResetPinModal()" class="p-1 hover:bg-zinc-100 rounded-lg text-zinc-500">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <p class="text-xs text-zinc-600">Set a new 4-digit PIN for <strong id="reset-pin-staff-name" class="text-zinc-900"></strong>. Leave blank to auto-generate a random PIN.</p>
+        <form onsubmit="handleResetPin(event)" class="space-y-4 text-xs">
+            <input type="hidden" id="reset-pin-staff-id" value="">
+            <div>
+                <label class="block font-bold text-zinc-700 uppercase mb-1">New 4-Digit PIN (optional)</label>
+                <input type="text" id="reset-pin-value" maxlength="4" placeholder="Leave blank for random PIN" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500 text-center font-mono">
+            </div>
+            <button type="submit" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition-all cursor-pointer">
+                Reset PIN
+            </button>
+        </form>
+    </div>
+</div>
+
 <script>
     function openAddStaffModal() { document.getElementById('add-staff-modal').classList.replace('hidden', 'flex'); }
     function closeAddStaffModal() { document.getElementById('add-staff-modal').classList.replace('flex', 'hidden'); }
@@ -232,12 +259,60 @@ require __DIR__ . '/../partials/nav.php';
         }
     }
 
+    function openResetPinModal(id, name) {
+        document.getElementById('reset-pin-staff-id').value = id;
+        document.getElementById('reset-pin-staff-name').innerText = name;
+        document.getElementById('reset-pin-value').value = '';
+        document.getElementById('reset-pin-modal').classList.replace('hidden', 'flex');
+    }
+
+    function closeResetPinModal() {
+        document.getElementById('reset-pin-modal').classList.replace('flex', 'hidden');
+    }
+
+    async function handleResetPin(e) {
+        e.preventDefault();
+        const id = document.getElementById('reset-pin-staff-id').value;
+        const pin = document.getElementById('reset-pin-value').value;
+        if (!id) {
+            alert('Missing staff ID.');
+            return;
+        }
+
+        try {
+            const res = await authFetch('/api/staff/reset-pin', {
+                method: 'POST',
+                body: JSON.stringify({ id, pin: pin || undefined })
+            });
+            const data = await res.json();
+            if (data.success) {
+                const newPin = data.data?.pin || '(random)';
+                alert(`PIN reset successfully. New PIN: ${newPin}`);
+                closeResetPinModal();
+                window.location.reload();
+            } else {
+                alert(data.message || 'Failed to reset PIN.');
+            }
+        } catch (e) {
+            alert('Error resetting PIN: ' + (e.message || 'Unknown error'));
+        }
+    }
+
     document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.remove-staff-btn');
-        if (!btn) return;
-        const id = btn.getAttribute('data-staff-id');
-        const name = btn.getAttribute('data-staff-name');
-        removeStaff(id, name);
+        const removeBtn = e.target.closest('.remove-staff-btn');
+        if (removeBtn) {
+            const id = removeBtn.getAttribute('data-staff-id');
+            const name = removeBtn.getAttribute('data-staff-name');
+            removeStaff(id, name);
+            return;
+        }
+
+        const resetBtn = e.target.closest('.reset-pin-btn');
+        if (resetBtn) {
+            const id = resetBtn.getAttribute('data-staff-id');
+            const name = resetBtn.getAttribute('data-staff-name');
+            openResetPinModal(id, name);
+        }
     });
 </script>
 
