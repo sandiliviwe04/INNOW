@@ -127,7 +127,15 @@ $router->get('/', function() use ($user) {
         header('Location: /dashboard');
         exit;
     }
-    header('Location: /login');
+
+    $db = \Innow\Config\Database::getConnection();
+    $userCount = $db->query('SELECT COUNT(*) as cnt FROM users')->fetch()['cnt'];
+
+    if ($userCount === 0) {
+        header('Location: /setup');
+    } else {
+        header('Location: /login');
+    }
     exit;
 });
 $router->get('/dashboard', $dashboardHandler);

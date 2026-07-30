@@ -32,9 +32,10 @@ require __DIR__ . '/../partials/header.php';
             </button>
         </form>
 
-        <div class="border-t border-zinc-200 pt-4 text-center">
+        <div class="border-t border-zinc-200 pt-4 text-center space-y-1">
             <span class="text-xs text-zinc-400">Need to access the QR terminal?</span>
             <p class="text-[11px] text-zinc-500 mt-1">Log in first, then open <strong>Check-In</strong> from the navigation menu.</p>
+            <p class="text-[11px] text-zinc-500 mt-2">No admin account yet? <a href="/setup" class="text-red-600 font-bold hover:underline">Run initial setup</a></p>
         </div>
     </div>
 </div>
