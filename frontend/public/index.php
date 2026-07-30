@@ -148,6 +148,14 @@ $router->get('/login', function() use ($user) {
     require __DIR__ . '/../views/auth/login.php';
 });
 
+$router->get('/setup', function() use ($user) {
+    if ($user) {
+        header('Location: /dashboard');
+        exit;
+    }
+    require __DIR__ . '/../views/setup.php';
+});
+
 $router->get('/logout', [\Innow\Controllers\AuthController::class, 'logout']);
 
 $router->get('/checkin', function() use ($user, $csrfToken) {
