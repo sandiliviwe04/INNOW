@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/index.php';
+require __DIR__ . '/../public/index.php';
 
 use Innow\Config\Database;
 use Innow\Models\User;
