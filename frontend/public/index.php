@@ -156,6 +156,10 @@ $router->get('/setup', function() use ($user) {
     require __DIR__ . '/../views/setup.php';
 });
 
+$router->post('/setup', function() {
+    require __DIR__ . '/../views/setup.php';
+});
+
 $router->get('/logout', [\Innow\Controllers\AuthController::class, 'logout']);
 
 $router->get('/checkin', function() use ($user, $csrfToken) {
