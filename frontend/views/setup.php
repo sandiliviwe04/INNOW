@@ -1,4 +1,9 @@
 <?php
+
+// Show errors during setup
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+
 // Standalone setup page - does NOT include index.php to avoid infinite recursion
 
 // Load .env
@@ -77,12 +82,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($existing) $errors[] = 'Email already exists.';
 
     if (empty($errors)) {
-        $user = User::create(compact('name', 'email', 'pin', 'role', 'department'));
-        if ($user) {
-            header('Location: /login?setup=success');
-            exit;
+        try {
+            $user = User::create(compact('name', 'email', 'pin', 'role', 'department'));
+            if ($user) {
+                header('Location: /login?setup=success');
+                exit;
+            }
+            $errors[] = 'Failed to create user.';
+        } catch (Exception $e) {
+            $errors[] = 'Error: ' . $e->getMessage();
         }
-        $errors[] = 'Failed to create user.';
     }
 }
 ?>
