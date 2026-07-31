@@ -43,10 +43,15 @@ class Session {
         return $session ?: null;
     }
 
-    public static function updateActivity(string $token): void {
+    public static function updateActivity(string $token): void
+    {
         $db = Database::getConnection();
-        $stmt = $db->prepare("UPDATE sessions SET last_activity_at = NOW() WHERE token = :token");
-        $stmt->execute(['token' => $token]);
+        try {
+            $stmt = $db->prepare("UPDATE sessions SET last_activity_at = NOW() WHERE token = :token");
+            $stmt->execute(['token' => $token]);
+        } catch (\Throwable $e) {
+            // Column may not exist on older schemas; safe to ignore
+        }
     }
 
     public static function delete(string $token): bool {
