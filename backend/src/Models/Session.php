@@ -12,17 +12,29 @@ class Session {
         $token = bin2hex(random_bytes(32));
         $expiresAt = date('Y-m-d H:i:s', time() + (30 * 60)); // 30 minutes
 
-        $stmt = $db->prepare("
-            INSERT INTO sessions (id, user_id, token, created_at, expires_at, last_activity_at)
-            VALUES (:id, :user_id, :token, NOW(), :expires_at, NOW())
-        ");
-
-        $stmt->execute([
-            'id' => $id,
-            'user_id' => $userId,
-            'token' => $token,
-            'expires_at' => $expiresAt
-        ]);
+        try {
+            $stmt = $db->prepare("
+                INSERT INTO sessions (id, user_id, token, created_at, expires_at, last_activity_at)
+                VALUES (:id, :user_id, :token, NOW(), :expires_at, NOW())
+            ");
+            $stmt->execute([
+                'id' => $id,
+                'user_id' => $userId,
+                'token' => $token,
+                'expires_at' => $expiresAt
+            ]);
+        } catch (\Throwable $e) {
+            $stmt = $db->prepare("
+                INSERT INTO sessions (id, user_id, token, created_at, expires_at)
+                VALUES (:id, :user_id, :token, NOW(), :expires_at)
+            ");
+            $stmt->execute([
+                'id' => $id,
+                'user_id' => $userId,
+                'token' => $token,
+                'expires_at' => $expiresAt
+            ]);
+        }
 
         return $token;
     }
