@@ -1,6 +1,0 @@
-{
-  "name": "Digital Attendance Tracking System",
-  "description": "Real-time staff attendance tracking, live onsite dashboard, emergency roll call, and MySQL database storage.",
-  "requestFramePermissions": ["camera"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
