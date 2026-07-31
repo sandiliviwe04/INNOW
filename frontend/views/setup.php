@@ -1,14 +1,57 @@
 <?php
-require __DIR__ . '/../public/index.php';
+// Standalone setup page - does NOT include index.php to avoid infinite recursion
 
+// Load .env
+$envFile = __DIR__ . '/../.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if ($line === '' || str_starts_with($line, '#')) continue;
+        $pos = strpos($line, '=');
+        if ($pos === false) continue;
+        $key = trim(substr($line, 0, $pos));
+        $value = trim(substr($line, $pos + 1));
+        if (str_starts_with($value, '"') && str_ends_with($value, '"')) $value = substr($value, 1, -1);
+        if (!array_key_exists($key, $_ENV)) $_ENV[$key] = $value;
+        if (!array_key_exists($key, $_SERVER)) $_SERVER[$key] = $value;
+        putenv($key . '=' . $value);
+    }
+}
+
+// Load backend .env too
+$backendEnvFile = __DIR__ . '/../../backend/.env';
+if (file_exists($backendEnvFile)) {
+    $lines = file($backendEnvFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if ($line === '' || str_starts_with($line, '#')) continue;
+        $pos = strpos($line, '=');
+        if ($pos === false) continue;
+        $key = trim(substr($line, 0, $pos));
+        $value = trim(substr($line, $pos + 1));
+        if (str_starts_with($value, '"') && str_ends_with($value, '"')) $value = substr($value, 1, -1);
+        if (!array_key_exists($key, $_ENV)) $_ENV[$key] = $value;
+        if (!array_key_exists($key, $_SERVER)) $_SERVER[$key] = $value;
+        putenv($key . '=' . $value);
+    }
+}
+
+// Load Composer autoloader
+require __DIR__ . '/../../backend/vendor/autoload.php';
+
+// Connect to database directly
 use Innow\Config\Database;
 use Innow\Models\User;
 
-$db = Database::getConnection();
-$userCount = $db->query('SELECT COUNT(*) as cnt FROM users')->fetch()['cnt'];
+try {
+    $db = Database::getConnection();
+    $userCount = $db->query('SELECT COUNT(*) as cnt FROM users')->fetch()['cnt'];
+} catch (Exception $e) {
+    die("<h1>Database Connection Error</h1><p>" . htmlspecialchars($e->getMessage()) . "</p><p>Check your .env credentials and ensure MySQL is running.</p>");
+}
 
 if ($userCount > 0) {
-    if (session_status() === PHP_SESSION_NONE) session_start();
     header('Location: /login');
     exit;
 }
