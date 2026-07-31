@@ -2,7 +2,7 @@
 // Standalone setup page - does NOT include index.php to avoid infinite recursion
 
 // Load .env
-$envFile = __DIR__ . '/../.env';
+$envFile = __DIR__ . '/../../.env';
 if (file_exists($envFile)) {
     $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
@@ -19,7 +19,7 @@ if (file_exists($envFile)) {
     }
 }
 
-// Load backend .env too
+// Load backend .env
 $backendEnvFile = __DIR__ . '/../../backend/.env';
 if (file_exists($backendEnvFile)) {
     $lines = file($backendEnvFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -38,7 +38,12 @@ if (file_exists($backendEnvFile)) {
 }
 
 // Load Composer autoloader
-require __DIR__ . '/../../backend/vendor/autoload.php';
+$autoloadPath = __DIR__ . '/../../../backend/vendor/autoload.php';
+if (!file_exists($autoloadPath)) {
+    http_response_code(500);
+    die("<h1>Setup Error</h1><p>Composer dependencies are missing.</p><p>Run this command in the <code>backend</code> folder first:</p><pre>composer install --no-dev --optimize-autoloader</pre>");
+}
+require $autoloadPath;
 
 // Connect to database directly
 use Innow\Config\Database;
