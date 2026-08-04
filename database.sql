@@ -3,12 +3,7 @@
 -- Compatible with MySQL Workbench 8.x, phpMyAdmin, and MySQL Server 5.7+ / 8.0+
 -- ====================================================================
 
-CREATE DATABASE IF NOT EXISTS `innow_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `innow_db`;
-
--- --------------------------------------------------------------------
 -- Table structure for `users`
--- --------------------------------------------------------------------
 DROP TABLE IF EXISTS `attendance_records`;
 DROP TABLE IF EXISTS `sessions`;
 DROP TABLE IF EXISTS `users`;
@@ -30,9 +25,7 @@ CREATE TABLE `users` (
   UNIQUE KEY `uk_users_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- --------------------------------------------------------------------
 -- Table structure for `attendance_records`
--- --------------------------------------------------------------------
 CREATE TABLE `attendance_records` (
   `id` VARCHAR(50) NOT NULL,
   `user_id` VARCHAR(50) NOT NULL,
@@ -46,23 +39,20 @@ CREATE TABLE `attendance_records` (
   CONSTRAINT `fk_attendance_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- --------------------------------------------------------------------
 -- Table structure for `sessions`
--- --------------------------------------------------------------------
 CREATE TABLE `sessions` (
   `id` VARCHAR(100) NOT NULL,
   `user_id` VARCHAR(50) NOT NULL,
   `token` VARCHAR(100) NOT NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `expires_at` DATETIME NOT NULL,
+  `last_activity_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `fk_sessions_user` (`user_id`),
   CONSTRAINT `fk_sessions_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- --------------------------------------------------------------------
 -- Table structure for `leave_requests`
--- --------------------------------------------------------------------
 DROP TABLE IF EXISTS `leave_requests`;
 
 CREATE TABLE `leave_requests` (
@@ -82,9 +72,7 @@ CREATE TABLE `leave_requests` (
   CONSTRAINT `fk_leave_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- --------------------------------------------------------------------
 -- Table structure for `announcements`
--- --------------------------------------------------------------------
 DROP TABLE IF EXISTS `announcements`;
 
 CREATE TABLE `announcements` (
