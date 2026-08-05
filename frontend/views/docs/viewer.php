@@ -4,7 +4,7 @@ require __DIR__ . '/../partials/header.php';
 require __DIR__ . '/../partials/nav.php';
 
 $activeDoc = $_GET['doc'] ?? 'user-guide';
-$docPath = __DIR__ . '/../../../docs/' . $activeDoc . '.md';
+$docPath = __DIR__ . '/../../../backend/docs/' . $activeDoc . '.md';
 $docContent = file_exists($docPath) ? file_get_contents($docPath) : "# Document not found\nThe file {$activeDoc}.md does not exist in docs/.";
 ?>
 

@@ -5,7 +5,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', '0');
 
 // Load .env file into environment
-$envFile = __DIR__ . '/../../.env';
+$envFile = __DIR__ . '/../.env';
 if (file_exists($envFile)) {
     $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
@@ -32,7 +32,7 @@ if (file_exists($envFile)) {
     }
 }
 
-$backendEnvFile = __DIR__ . '/../../backend/.env';
+$backendEnvFile = __DIR__ . '/../backend/.env';
 if (file_exists($backendEnvFile)) {
     $lines = file($backendEnvFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
@@ -71,7 +71,7 @@ if (!function_exists('process_env')) {
 // Custom PSR-4 Autoloader
 spl_autoload_register(function ($class) {
     $prefix = 'Innow\\';
-    $baseDir = __DIR__ . '/../../backend/src/';
+    $baseDir = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/backend/src/';
 
     $len = strlen($prefix);
     if (strncmp($prefix, $class, $len) !== 0) {
@@ -119,7 +119,7 @@ $dashboardHandler = function() use ($user, $csrfToken) {
     \Innow\Middleware\AuthMiddleware::guard();
     $allStaff = User::all();
     $recentLogs = AttendanceRecord::all();
-    require __DIR__ . '/../views/dashboard/index.php';
+    require __DIR__ . '/views/dashboard/index.php';
 };
 
 $router->get('/', function() use ($user) {
@@ -145,7 +145,7 @@ $router->get('/login', function() use ($user) {
         header('Location: /dashboard');
         exit;
     }
-    require __DIR__ . '/../views/auth/login.php';
+    require __DIR__ . '/views/auth/login.php';
 });
 
 $router->get('/setup', function() use ($user) {
@@ -153,11 +153,11 @@ $router->get('/setup', function() use ($user) {
         header('Location: /dashboard');
         exit;
     }
-    require __DIR__ . '/../views/setup.php';
+    require __DIR__ . '/views/setup.php';
 });
 
 $router->post('/setup', function() {
-    require __DIR__ . '/../views/setup.php';
+    require __DIR__ . '/views/setup.php';
 });
 
 $router->get('/logout', [\Innow\Controllers\AuthController::class, 'logout']);
@@ -166,19 +166,19 @@ $router->get('/checkin', function() use ($user, $csrfToken) {
     \Innow\Middleware\AuthMiddleware::guard();
     $isAdmin = $user && (stripos($user['role'] ?? '', 'admin') !== false || ($user['role'] ?? '') === 'System Administrator');
     $allStaff = $isAdmin ? User::all() : [$user];
-    require __DIR__ . '/../views/attendance/checkin.php';
+    require __DIR__ . '/views/attendance/checkin.php';
 });
 
 $router->get('/checkin/qr', function() use ($user, $csrfToken) {
     \Innow\Middleware\AuthMiddleware::guard();
     $allStaff = User::all();
-    require __DIR__ . '/../views/attendance/qr_checkin.php';
+    require __DIR__ . '/views/attendance/qr_checkin.php';
 });
 
 $router->get('/staff', function() use ($user, $csrfToken) {
     \Innow\Middleware\AuthMiddleware::guard();
     $allStaff = User::all();
-    require __DIR__ . '/../views/staff/directory.php';
+    require __DIR__ . '/views/staff/directory.php';
 });
 
 $router->get('/logs', function() use ($user) {
@@ -196,22 +196,22 @@ $router->get('/logs', function() use ($user) {
     header('Expires: 0');
     $allStaff = User::all();
     $allLogs = AttendanceRecord::all();
-    require __DIR__ . '/../views/attendance/logs.php';
+    require __DIR__ . '/views/attendance/logs.php';
 });
 
 $router->get('/docs', function() use ($user, $csrfToken) {
     \Innow\Middleware\AuthMiddleware::guard();
-    require __DIR__ . '/../views/docs/viewer.php';
+    require __DIR__ . '/views/docs/viewer.php';
 });
 
 $router->get('/leave', function() use ($user, $csrfToken) {
     \Innow\Middleware\AuthMiddleware::guard();
-    require __DIR__ . '/../views/leave/index.php';
+    require __DIR__ . '/views/leave/index.php';
 });
 
 $router->get('/announcements', function() use ($user, $csrfToken) {
     \Innow\Middleware\AuthMiddleware::guard();
-    require __DIR__ . '/../views/announcements/index.php';
+    require __DIR__ . '/views/announcements/index.php';
 });
 
 // JSON API Routes
