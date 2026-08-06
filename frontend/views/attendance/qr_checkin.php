@@ -88,8 +88,13 @@ require __DIR__ . '/../partials/nav.php';
             { facingMode: "environment" },
             config,
             (decodedText) => {
-                const url = new URL(decodedText);
-                const token = url.searchParams.get('token');
+                let token = null;
+                try {
+                    const url = new URL(decodedText, window.location.origin);
+                    token = url.searchParams.get('token');
+                } catch (e) {
+                    console.error('Failed to parse scanned QR content:', decodedText, e);
+                }
                 if (token) {
                     window.location.href = '/checkin/qr?token=' + encodeURIComponent(token);
                 } else {
@@ -112,14 +117,20 @@ require __DIR__ . '/../partials/nav.php';
                 method: 'POST',
                 body: JSON.stringify({ qr_token: qrToken, action: action })
             });
-            const data = await res.json();
+            let data;
+            try {
+                data = await res.json();
+            } catch (parseErr) {
+                alert('Unexpected server response (HTTP ' + res.status + '). Please tell your admin.');
+                return;
+            }
             if (data.success) {
-                alert('Success: ' + data.message);
+                alert('Success: ' + (data.message || 'Action completed.'));
             } else {
-                alert('Error: ' + data.message);
+                alert('Error: ' + (data.message || 'Something went wrong.'));
             }
         } catch (e) {
-            alert('Network error. Please try again.');
+            alert('Network error: ' + e.message);
         }
     }
     <?php endif; ?>
