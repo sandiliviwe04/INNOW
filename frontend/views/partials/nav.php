@@ -50,11 +50,6 @@ $isAdmin = $user && (stripos($user['role'] ?? '', 'admin') !== false || ($user['
                          <i data-lucide="history" class="w-4 h-4"></i>
                          <span>Audit Logs</span>
                      </a>
-
-                     <a href="/docs" class="px-3 py-2 rounded-lg text-sm font-semibold transition-colors <?= $currentPath === '/docs' ? 'bg-red-50 text-red-700 font-bold' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100' ?> flex items-center gap-1.5">
-                         <i data-lucide="file-text" class="w-4 h-4"></i>
-                         <span>Docs</span>
-                     </a>
                  <?php endif; ?>
 
                  <a href="/staff" class="px-3 py-2 rounded-lg text-sm font-semibold transition-colors <?= $currentPath === '/staff' ? 'bg-red-50 text-red-700 font-bold' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100' ?> flex items-center gap-1.5">
@@ -116,11 +111,6 @@ $isAdmin = $user && (stripos($user['role'] ?? '', 'admin') !== false || ($user['
                      <a href="/logs" class="block px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors <?= $currentPath === '/logs' ? 'bg-red-50 text-red-700 font-bold' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100' ?> flex items-center gap-2">
                          <i data-lucide="history" class="w-4 h-4"></i>
                          <span>Audit Logs</span>
-                     </a>
-
-                     <a href="/docs" class="block px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors <?= $currentPath === '/docs' ? 'bg-red-50 text-red-700 font-bold' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100' ?> flex items-center gap-2">
-                         <i data-lucide="file-text" class="w-4 h-4"></i>
-                         <span>Docs</span>
                      </a>
                  <?php endif; ?>
 
