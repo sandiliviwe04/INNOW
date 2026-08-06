@@ -141,10 +141,6 @@ $router->get('/', function() use ($user) {
 $router->get('/dashboard', $dashboardHandler);
 
 $router->get('/login', function() use ($user) {
-    if ($user) {
-        header('Location: /dashboard');
-        exit;
-    }
     require __DIR__ . '/views/auth/login.php';
 });
 
