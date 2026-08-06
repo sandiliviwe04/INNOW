@@ -3,6 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        // Force a fresh server request whenever this page is restored from the
+        // browser's back/forward cache (bfcache), instead of showing a stale,
+        // possibly-authenticated snapshot after logout. The server will then
+        // re-check the session via AuthMiddleware::guard() and redirect to
+        // /login if it's no longer valid.
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted || (window.performance && performance.getEntriesByType('navigation')[0]?.type === 'back_forward')) {
+                window.location.reload();
+            }
+        });
+    </script>
     <?php if (!empty($csrfToken)): ?>
     <meta name="csrf-token" content="<?= htmlspecialchars($csrfToken) ?>">
     <script>window.csrfToken = <?= json_encode($csrfToken) ?>;</script>
@@ -21,15 +33,20 @@
                 'X-CSRF-Token': getCsrfToken(),
                 ...(options.headers || {})
             };
-            const res = await fetch(url, {
-                ...options,
-                headers,
-                credentials: 'same-origin'
-            });
-            if (!res.ok) {
-                const text = await res.text().catch(() => 'Unknown error');
-                throw new Error(`API ${res.status}: ${text}`);
+            let res;
+            try {
+                res = await fetch(url, {
+                    ...options,
+                    headers,
+                    credentials: 'same-origin'
+                });
+            } catch (networkErr) {
+                // Genuine network-level failure (offline, DNS, CORS, server unreachable)
+                throw new Error('NETWORK_FAILURE');
             }
+            // Do NOT throw on 4xx/5xx here — the backend returns proper JSON
+            // error bodies (success:false + message) that callers should read
+            // and display directly, instead of a generic error.
             return res;
         }
     </script>
