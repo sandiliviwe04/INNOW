@@ -62,6 +62,64 @@ class UserController {
         ResponseHelper::success(['user' => $newUser], 'Staff member registered successfully.');
     }
 
+    public function update(): void {
+        $user = AuthMiddleware::check();
+        if (!$user) {
+            ResponseHelper::error('Authentication required.', 401);
+            return;
+        }
+
+        $this->validateCsrf();
+
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        $id = trim($input['id'] ?? '');
+
+        if (!$id) {
+            ResponseHelper::error('Staff ID is required.', 400);
+            return;
+        }
+
+        $isAdmin = stripos($user['role'] ?? '', 'admin') !== false || ($user['role'] ?? '') === 'System Administrator';
+
+        // Staff members may only edit their own profile. Admins may edit anyone's.
+        if (!$isAdmin && $id !== ($user['user_id'] ?? '')) {
+            ResponseHelper::error('You can only edit your own profile.', 403);
+            return;
+        }
+
+        $target = User::find($id);
+        if (!$target) {
+            ResponseHelper::error('Staff member not found.', 404);
+            return;
+        }
+
+        $errors = Validator::validate($input, [
+            'name' => 'required|min:2',
+            'email' => 'required|email',
+        ]);
+
+        if (!empty($errors)) {
+            ResponseHelper::error('Validation failed', 422, $errors);
+            return;
+        }
+
+        $existing = User::findByEmail($input['email']);
+        if ($existing && $existing['id'] !== $id) {
+            ResponseHelper::error('Another staff member is already using this email.', 400);
+            return;
+        }
+
+        $updated = User::update($id, [
+            'name' => trim($input['name']),
+            'email' => trim($input['email']),
+            'phone' => trim($input['phone'] ?? ''),
+            'emergency_contact' => trim($input['emergency_contact'] ?? ''),
+            'address' => trim($input['address'] ?? ''),
+        ]);
+
+        ResponseHelper::success(['user' => $updated], 'Staff details updated successfully.');
+    }
+
     public function destroy(): void {
         $user = AuthMiddleware::check();
         if (!$user) {

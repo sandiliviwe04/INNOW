@@ -43,45 +43,56 @@ require __DIR__ . '/../partials/nav.php';
                         <span>Staff ID:</span>
                         <strong class="text-zinc-900"><?= htmlspecialchars($stf['id']) ?></strong>
                     </div>
-                    <?php if ($isAdmin): ?>
-                    <div class="flex justify-between text-zinc-600">
-                        <span>Access PIN:</span>
-                        <strong class="text-emerald-700 font-bold"><?= htmlspecialchars($stf['pin']) ?></strong>
-                    </div>
-                    <?php else: ?>
-                    <div class="flex justify-between text-zinc-600">
-                        <span>Access PIN:</span>
-                        <strong class="text-zinc-400">&#8226;&#8226;&#8226;&#8226;</strong>
-                    </div>
-                    <?php endif; ?>
                     <div class="flex justify-between text-zinc-600">
                         <span>Contact:</span>
                         <span class="text-zinc-800 font-bold"><?= $isAdmin ? htmlspecialchars($stf['phone']) : 'Restricted' ?></span>
                     </div>
+                    <?php if ($isAdmin): ?>
+                    <div class="flex justify-between text-zinc-600">
+                        <span>Emergency:</span>
+                        <span class="text-zinc-800 font-bold"><?= !empty($stf['emergency_contact']) ? htmlspecialchars($stf['emergency_contact']) : '—' ?></span>
+                    </div>
+                    <div class="flex justify-between text-zinc-600 gap-3">
+                        <span class="shrink-0">Address:</span>
+                        <span class="text-zinc-800 font-bold text-right"><?= !empty($stf['address']) ? htmlspecialchars($stf['address']) : '—' ?></span>
+                    </div>
+                    <?php endif; ?>
                 </div>
 
-                <div class="flex items-center justify-between pt-2 border-t border-zinc-100">
-                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase <?= $stf['status'] === 'ONSITE' ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-100 text-zinc-600' ?>">
-                        <?= $stf['status'] ?>
-                    </span>
+                <div class="pt-2 border-t border-zinc-100 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase <?= $stf['status'] === 'ONSITE' ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-100 text-zinc-600' ?>">
+                            <?= $stf['status'] ?>
+                        </span>
+                        <?php if (!$isAdmin && !($user && $stf['id'] === ($user['user_id'] ?? null))): ?>
+                        <span class="text-[10px] text-zinc-400 font-medium">Admin managed</span>
+                        <?php endif; ?>
+                    </div>
 
                     <?php if ($isAdmin): ?>
-                    <div class="flex items-center gap-2">
-                        <button onclick="viewBadge('<?= htmlspecialchars(json_encode($stf)) ?>')" class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs">
-                            <i data-lucide="qr-code" class="w-3.5 h-3.5"></i>
-                            <span>Digital Badge Pass</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="openEditModal('<?= htmlspecialchars(json_encode($stf)) ?>')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs">
+                            <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                            <span>Edit</span>
                         </button>
-                        <button data-staff-id="<?= htmlspecialchars($stf['id']) ?>" data-staff-name="<?= htmlspecialchars($stf['name']) ?>" class="reset-pin-btn px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs">
+                        <button onclick="viewBadge('<?= htmlspecialchars(json_encode($stf)) ?>')" class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs">
+                            <i data-lucide="qr-code" class="w-3.5 h-3.5"></i>
+                            <span>Badge Pass</span>
+                        </button>
+                        <button data-staff-id="<?= htmlspecialchars($stf['id']) ?>" data-staff-name="<?= htmlspecialchars($stf['name']) ?>" class="reset-pin-btn px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs">
                             <i data-lucide="key-round" class="w-3.5 h-3.5"></i>
                             <span>Reset PIN</span>
                         </button>
-                        <button data-staff-id="<?= htmlspecialchars($stf['id']) ?>" data-staff-name="<?= htmlspecialchars($stf['name']) ?>" class="remove-staff-btn px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs">
+                        <button data-staff-id="<?= htmlspecialchars($stf['id']) ?>" data-staff-name="<?= htmlspecialchars($stf['name']) ?>" class="remove-staff-btn px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs">
                             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                             <span>Remove</span>
                         </button>
                     </div>
-                    <?php else: ?>
-                    <span class="text-[10px] text-zinc-400 font-medium">Admin managed</span>
+                    <?php elseif ($user && $stf['id'] === ($user['user_id'] ?? null)): ?>
+                    <button onclick="openEditModal('<?= htmlspecialchars(json_encode($stf)) ?>')" class="w-full px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs">
+                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                        <span>Edit My Info</span>
+                    </button>
                     <?php endif; ?>
                 </div>
             </div>
@@ -127,6 +138,18 @@ require __DIR__ . '/../partials/nav.php';
             <div>
                 <label class="block font-bold text-zinc-700 uppercase mb-1">Role Title</label>
                 <input type="text" id="new-role" placeholder="Junior Developer" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+            <div>
+                <label class="block font-bold text-zinc-700 uppercase mb-1">Phone Number</label>
+                <input type="text" id="new-phone" placeholder="+27 82 000 0000" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+            <div>
+                <label class="block font-bold text-zinc-700 uppercase mb-1">Emergency Contact Number</label>
+                <input type="text" id="new-emergency" placeholder="+27 82 000 0000" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+            <div>
+                <label class="block font-bold text-zinc-700 uppercase mb-1">Address</label>
+                <input type="text" id="new-address" placeholder="123 Main Rd, Cape Town" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
             </div>
 
             <button type="submit" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all cursor-pointer">
@@ -196,6 +219,46 @@ require __DIR__ . '/../partials/nav.php';
     </div>
 </div>
 
+<!-- Edit Staff Modal -->
+<div id="edit-staff-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="bg-white border border-zinc-200 rounded-2xl max-w-md w-full p-6 shadow-xl space-y-6">
+        <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
+            <h3 class="text-lg font-bold text-zinc-900">Edit Staff Details</h3>
+            <button onclick="closeEditModal()" class="p-1 hover:bg-zinc-100 rounded-lg text-zinc-500">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <form onsubmit="handleUpdateStaff(event)" class="space-y-4 text-xs">
+            <input type="hidden" id="edit-staff-id" value="">
+            <div>
+                <label class="block font-bold text-zinc-700 uppercase mb-1">Full Name</label>
+                <input type="text" id="edit-name" required placeholder="e.g. Sipho Nkosi" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+            <div>
+                <label class="block font-bold text-zinc-700 uppercase mb-1">Email Address</label>
+                <input type="email" id="edit-email" required placeholder="sipho.n@innow.com" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+            <div>
+                <label class="block font-bold text-zinc-700 uppercase mb-1">Phone Number</label>
+                <input type="text" id="edit-phone" placeholder="+27 82 000 0000" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+            <div>
+                <label class="block font-bold text-zinc-700 uppercase mb-1">Emergency Contact Number</label>
+                <input type="text" id="edit-emergency" placeholder="+27 82 000 0000" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+            <div>
+                <label class="block font-bold text-zinc-700 uppercase mb-1">Address</label>
+                <input type="text" id="edit-address" placeholder="123 Main Rd, Cape Town" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+
+            <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all cursor-pointer">
+                Save Changes
+            </button>
+        </form>
+    </div>
+</div>
+
 <script>
     function openAddStaffModal() { document.getElementById('add-staff-modal').classList.replace('hidden', 'flex'); }
     function closeAddStaffModal() { document.getElementById('add-staff-modal').classList.replace('flex', 'hidden'); }
@@ -221,6 +284,9 @@ require __DIR__ . '/../partials/nav.php';
             pin: document.getElementById('new-pin').value,
             department: document.getElementById('new-dept').value,
             role: document.getElementById('new-role').value,
+            phone: document.getElementById('new-phone').value,
+            emergency_contact: document.getElementById('new-emergency').value,
+            address: document.getElementById('new-address').value,
         };
 
         try {
@@ -268,6 +334,49 @@ require __DIR__ . '/../partials/nav.php';
 
     function closeResetPinModal() {
         document.getElementById('reset-pin-modal').classList.replace('flex', 'hidden');
+    }
+
+    function openEditModal(jsonStr) {
+        const stf = JSON.parse(jsonStr);
+        document.getElementById('edit-staff-id').value = stf.id;
+        document.getElementById('edit-name').value = stf.name || '';
+        document.getElementById('edit-email').value = stf.email || '';
+        document.getElementById('edit-phone').value = stf.phone || '';
+        document.getElementById('edit-emergency').value = stf.emergency_contact || '';
+        document.getElementById('edit-address').value = stf.address || '';
+        document.getElementById('edit-staff-modal').classList.replace('hidden', 'flex');
+    }
+
+    function closeEditModal() {
+        document.getElementById('edit-staff-modal').classList.replace('flex', 'hidden');
+    }
+
+    async function handleUpdateStaff(e) {
+        e.preventDefault();
+        const body = {
+            id: document.getElementById('edit-staff-id').value,
+            name: document.getElementById('edit-name').value,
+            email: document.getElementById('edit-email').value,
+            phone: document.getElementById('edit-phone').value,
+            emergency_contact: document.getElementById('edit-emergency').value,
+            address: document.getElementById('edit-address').value,
+        };
+
+        try {
+            const res = await authFetch('/api/staff/update', {
+                method: 'POST',
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (data.success) {
+                closeEditModal();
+                window.location.reload();
+            } else {
+                alert(data.message || 'Failed to update staff details.');
+            }
+        } catch (e) {
+            alert('Network error: ' + (e.message || 'Unknown error'));
+        }
     }
 
     async function handleResetPin(e) {

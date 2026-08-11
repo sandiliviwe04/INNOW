@@ -42,8 +42,8 @@ class User {
         $qrCode = 'INNOW-QR-' . str_replace('STF-', '', $id) . '-' . strtoupper(explode(' ', $data['name'])[0]);
 
         $stmt = $db->prepare("
-            INSERT INTO users (id, name, email, pin, role, department, phone, emergency_contact, status, qr_code)
-            VALUES (:id, :name, :email, :pin, :role, :department, :phone, :emergency_contact, 'OFFSITE', :qr_code)
+            INSERT INTO users (id, name, email, pin, role, department, phone, emergency_contact, address, status, qr_code)
+            VALUES (:id, :name, :email, :pin, :role, :department, :phone, :emergency_contact, :address, 'OFFSITE', :qr_code)
         ");
 
         $hashedPin = password_hash($data['pin'], PASSWORD_BCRYPT);
@@ -57,6 +57,7 @@ class User {
             'department' => $data['department'] ?? 'Software Engineering',
             'phone' => $data['phone'] ?? '+27 82 000 0000',
             'emergency_contact' => $data['emergency_contact'] ?? '',
+            'address' => $data['address'] ?? '',
             'qr_code' => $qrCode,
         ]);
 
@@ -67,6 +68,28 @@ class User {
         $db = Database::getConnection();
         $stmt = $db->prepare("UPDATE users SET status = :status WHERE id = :id");
         return $stmt->execute(['status' => $status, 'id' => $id]);
+    }
+
+    public static function update(string $id, array $data): ?array {
+        $db = Database::getConnection();
+        $stmt = $db->prepare("
+            UPDATE users
+            SET name = :name,
+                email = :email,
+                phone = :phone,
+                emergency_contact = :emergency_contact,
+                address = :address
+            WHERE id = :id
+        ");
+        $stmt->execute([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'phone' => $data['phone'] ?? '',
+            'emergency_contact' => $data['emergency_contact'] ?? '',
+            'address' => $data['address'] ?? '',
+            'id' => $id,
+        ]);
+        return self::find($id);
     }
 
     public static function getOnsite(): array {

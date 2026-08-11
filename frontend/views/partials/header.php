@@ -50,6 +50,85 @@
             return res;
         }
     </script>
+    <?php if (!empty($user)): ?>
+    <script>
+        // --- Live activity notifications -------------------------------------------------
+        // Polls the server every few seconds for announcements/check-ins made by OTHER
+        // staff members while this user is logged in, and shows a pop-up toast for each.
+        (function () {
+            let cursor = null;
+            const POLL_INTERVAL_MS = 8000;
+
+            function ensureToastContainer() {
+                let el = document.getElementById('innow-toast-container');
+                if (!el) {
+                    el = document.createElement('div');
+                    el.id = 'innow-toast-container';
+                    el.style.cssText = 'position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:0.5rem;max-width:22rem;';
+                    document.body.appendChild(el);
+                }
+                return el;
+            }
+
+            function actionLabel(action) {
+                switch (action) {
+                    case 'CLOCK_IN': return 'clocked in';
+                    case 'CLOCK_OUT': return 'clocked out';
+                    case 'BREAK_START': return 'started a break';
+                    case 'BREAK_END': return 'ended their break';
+                    default: return action.toLowerCase().replace('_', ' ');
+                }
+            }
+
+            function showToast(event) {
+                const container = ensureToastContainer();
+                const toast = document.createElement('div');
+                toast.style.cssText = 'background:#18181b;color:#fff;border-radius:0.75rem;padding:0.75rem 1rem;box-shadow:0 10px 25px rgba(0,0,0,0.25);font-family:inherit;font-size:0.8rem;display:flex;gap:0.6rem;align-items:flex-start;opacity:0;transform:translateX(1rem);transition:opacity 0.25s ease,transform 0.25s ease;';
+
+                let icon = '🔔';
+                let text = '';
+                if (event.type === 'announcement') {
+                    icon = '📢';
+                    text = `<strong>${event.author}</strong> posted an announcement: <strong>${event.title}</strong>`;
+                } else if (event.type === 'attendance') {
+                    icon = '🕒';
+                    text = `<strong>${event.staff_name}</strong> ${actionLabel(event.action)}`;
+                }
+
+                toast.innerHTML = `<span style="font-size:1rem;line-height:1.2;">${icon}</span><span style="flex:1;line-height:1.4;">${text}</span>`;
+                container.appendChild(toast);
+
+                requestAnimationFrame(() => {
+                    toast.style.opacity = '1';
+                    toast.style.transform = 'translateX(0)';
+                });
+
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(1rem)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 6000);
+            }
+
+            async function poll() {
+                try {
+                    const url = cursor ? `/api/notifications/poll?since=${encodeURIComponent(cursor)}` : '/api/notifications/poll';
+                    const res = await authFetch(url);
+                    const data = await res.json();
+                    if (data.success) {
+                        cursor = data.server_time;
+                        (data.events || []).forEach(showToast);
+                    }
+                } catch (e) {
+                    // Silently ignore — a missed poll just means we retry next interval.
+                }
+            }
+
+            poll();
+            setInterval(poll, POLL_INTERVAL_MS);
+        })();
+    </script>
+    <?php endif; ?>
     <title><?= htmlspecialchars($pageTitle ?? 'INNOW — Digital Attendance System') ?></title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>

@@ -141,6 +141,17 @@ $router->get('/', function() use ($user) {
 $router->get('/dashboard', $dashboardHandler);
 
 $router->get('/login', function() use ($user) {
+    // Only offer the "Run initial setup" link when the system genuinely has no
+    // users yet — otherwise it's a dead end that always bounces back to /login.
+    $hasUsers = true;
+    try {
+        $db = \Innow\Config\Database::getConnection();
+        $userCount = $db->query('SELECT COUNT(*) as cnt FROM users')->fetch()['cnt'];
+        $hasUsers = $userCount > 0;
+    } catch (\Throwable $e) {
+        // If we can't check, default to hiding the link rather than showing a dead one.
+        $hasUsers = true;
+    }
     require __DIR__ . '/views/auth/login.php';
 });
 
@@ -219,6 +230,7 @@ $router->post('/api/manual-entry', [\Innow\Controllers\AttendanceController::cla
 $router->get('/api/dashboard/summary', [\Innow\Controllers\DashboardController::class, 'getSummary']);
 $router->get('/api/staff', [\Innow\Controllers\UserController::class, 'index']);
 $router->post('/api/staff/add', [\Innow\Controllers\UserController::class, 'store']);
+$router->post('/api/staff/update', [\Innow\Controllers\UserController::class, 'update']);
 $router->post('/api/staff/remove', [\Innow\Controllers\UserController::class, 'destroy']);
 $router->post('/api/staff/reset-pin', [\Innow\Controllers\UserController::class, 'resetPin']);
 $router->get('/api/leaves', [\Innow\Controllers\LeaveController::class, 'index']);
@@ -226,6 +238,7 @@ $router->post('/api/leaves', [\Innow\Controllers\LeaveController::class, 'store'
 $router->post('/api/leaves/update', [\Innow\Controllers\LeaveController::class, 'update']);
 $router->post('/api/leaves/delete', [\Innow\Controllers\LeaveController::class, 'destroy']);
 $router->get('/api/announcements', [\Innow\Controllers\AnnouncementController::class, 'index']);
+$router->get('/api/notifications/poll', [\Innow\Controllers\NotificationController::class, 'poll']);
 $router->post('/api/announcements', [\Innow\Controllers\AnnouncementController::class, 'store']);
 $router->post('/api/announcements/delete', [\Innow\Controllers\AnnouncementController::class, 'destroy']);
 
