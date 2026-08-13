@@ -45,8 +45,8 @@ require __DIR__ . '/../partials/nav.php';
 </main>
 
 <!-- Leave Request Modal -->
-<div id="leave-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
-    <div class="bg-white border border-zinc-200 rounded-2xl max-w-md w-full p-6 shadow-xl space-y-6">
+<div id="leave-modal" class="modal-backdrop fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="modal-content bg-white border border-zinc-200 rounded-2xl max-w-md w-full p-6 shadow-xl space-y-6">
         <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
             <h3 class="text-lg font-bold text-zinc-900">Request Leave</h3>
             <button onclick="closeLeaveModal()" class="p-1 hover:bg-zinc-100 rounded-lg text-zinc-500">
@@ -92,8 +92,16 @@ require __DIR__ . '/../partials/nav.php';
 </div>
 
 <script>
-    function openLeaveModal() { document.getElementById('leave-modal').classList.replace('hidden', 'flex'); }
-    function closeLeaveModal() { document.getElementById('leave-modal').classList.replace('flex', 'hidden'); }
+    function openLeaveModal() {
+      const modal = document.getElementById('leave-modal');
+      modal.classList.replace('hidden', 'flex');
+      requestAnimationFrame(() => modal.classList.add('modal-visible'));
+    }
+    function closeLeaveModal() {
+      const modal = document.getElementById('leave-modal');
+      modal.classList.remove('modal-visible');
+      modal.classList.replace('flex', 'hidden');
+    }
 
     function toggleLeaveReason() {
         const type = document.getElementById('leave-type').value;

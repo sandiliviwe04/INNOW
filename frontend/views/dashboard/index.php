@@ -25,7 +25,7 @@ $offsiteCount = count(array_filter($allStaff, fn($s) => $s['status'] === 'OFFSIT
     </div>
 
         <!-- Summary Metrics Grid -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="bg-white p-5 rounded-2xl border border-zinc-200 shadow-xs space-y-1">
                 <div class="flex items-center justify-between text-zinc-500">
                     <span class="text-xs font-bold uppercase tracking-wider">Total Onsite</span>
@@ -51,15 +51,6 @@ $offsiteCount = count(array_filter($allStaff, fn($s) => $s['status'] === 'OFFSIT
                 </div>
                 <p class="text-3xl font-black text-zinc-600" id="metric-offsite"><?= $offsiteCount ?></p>
                 <p class="text-[11px] text-zinc-500 font-medium">Outside building premises</p>
-            </div>
-
-            <div class="bg-white p-5 rounded-2xl border border-zinc-200 shadow-xs space-y-1">
-                <div class="flex items-center justify-between text-zinc-500">
-                    <span class="text-xs font-bold uppercase tracking-wider">MySQL Database</span>
-                    <i data-lucide="database" class="w-4 h-4 text-blue-600"></i>
-                </div>
-                <p class="text-3xl font-black text-blue-600" id="metric-logs"><?= count($recentLogs) ?></p>
-                <p class="text-[11px] text-blue-700 font-medium">Stored attendance records</p>
             </div>
         </div>
 
@@ -171,11 +162,9 @@ $offsiteCount = count(array_filter($allStaff, fn($s) => $s['status'] === 'OFFSIT
             const onsiteEl = document.getElementById('metric-onsite');
             const breakEl = document.getElementById('metric-break');
             const offsiteEl = document.getElementById('metric-offsite');
-            const logsEl = document.getElementById('metric-logs');
             if (onsiteEl) onsiteEl.innerText = m.onsite_count ?? onsiteEl.innerText;
             if (breakEl) breakEl.innerText = m.break_count ?? breakEl.innerText;
             if (offsiteEl) offsiteEl.innerText = m.offsite_count ?? offsiteEl.innerText;
-            if (logsEl) logsEl.innerText = m.total_today_logs ?? logsEl.innerText;
 
             const staffMap = new Map((data.all_staff || []).map(s => [s.id, s.status]));
             document.querySelectorAll('.roster-row').forEach(row => {

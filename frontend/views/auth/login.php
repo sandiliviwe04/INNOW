@@ -6,9 +6,7 @@ require __DIR__ . '/../partials/header.php';
 <div class="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-50 my-auto">
     <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl border border-zinc-200 shadow-xl">
         <div class="text-center">
-            <div class="mx-auto w-12 h-12 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-md mb-3">
-                <i data-lucide="shield-check" class="w-7 h-7"></i>
-            </div>
+            <img src="/assets/innow-logo.svg" alt="INNOW Digital Attendance System" class="h-14 w-auto mx-auto mb-3">
             <h2 class="text-2xl font-extrabold text-zinc-900 tracking-tight">Staff Authenticator</h2>
             <p class="mt-1 text-xs text-zinc-500">Digital Attendance & Access Control</p>
         </div>

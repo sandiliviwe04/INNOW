@@ -25,8 +25,8 @@ $currentUserId = $user['user_id'] ?? '';
 </main>
 
 <!-- Announcement Modal -->
-<div id="announcement-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
-    <div class="bg-white border border-zinc-200 rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-6">
+<div id="announcement-modal" class="modal-backdrop fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="modal-content bg-white border border-zinc-200 rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-6">
         <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
             <h3 class="text-lg font-bold text-zinc-900">Create Announcement</h3>
             <button onclick="closeAnnouncementModal()" class="p-1 hover:bg-zinc-100 rounded-lg text-zinc-500">
@@ -55,8 +55,16 @@ $currentUserId = $user['user_id'] ?? '';
     const currentUserId = <?= json_encode($currentUserId) ?>;
     const isAdmin = <?= json_encode($isAdmin) ?>;
 
-    function openAnnouncementModal() { document.getElementById('announcement-modal').classList.replace('hidden', 'flex'); }
-    function closeAnnouncementModal() { document.getElementById('announcement-modal').classList.replace('flex', 'hidden'); }
+    function openAnnouncementModal() {
+      const modal = document.getElementById('announcement-modal');
+      modal.classList.replace('hidden', 'flex');
+      requestAnimationFrame(() => modal.classList.add('modal-visible'));
+    }
+    function closeAnnouncementModal() {
+      const modal = document.getElementById('announcement-modal');
+      modal.classList.remove('modal-visible');
+      modal.classList.replace('flex', 'hidden');
+    }
 
     async function loadAnnouncements() {
         try {

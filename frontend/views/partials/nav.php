@@ -7,19 +7,8 @@ $isAdmin = $user && (stripos($user['role'] ?? '', 'admin') !== false || ($user['
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
             <!-- Logo & Brand -->
-            <div class="flex items-center gap-3">
-                <a href="/dashboard" class="flex items-center gap-2.5">
-                    <div class="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-xs">
-                        <i data-lucide="shield-check" class="w-6 h-6"></i>
-                    </div>
-                    <div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="font-black text-lg text-zinc-900 tracking-tight">INNOW</span>
-                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-red-50 text-red-700 border border-red-200">PHP 8.3</span>
-                        </div>
-                        <p class="text-[11px] text-zinc-500 font-medium">Digital Attendance System</p>
-                    </div>
-                </a>
+            <div class="flex items-center">
+                <?php include __DIR__ . '/logo-partial.php'; ?>
             </div>
 
             <!-- Mobile Menu Button -->
@@ -90,8 +79,9 @@ $isAdmin = $user && (stripos($user['role'] ?? '', 'admin') !== false || ($user['
         </div>
 
         <!-- Mobile Navigation Menu -->
-        <div id="mobile-nav" class="hidden md:hidden border-t border-zinc-200 bg-white">
-            <nav class="px-4 py-3 space-y-1">
+        <div id="mobile-nav" class="mobile-nav-animate md:hidden border-t border-zinc-200 bg-white">
+            <div class="overflow-hidden">
+                <nav class="px-4 py-3 space-y-1">
                  <a href="/checkin" class="block px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors <?= $currentPath === '/checkin' ? 'bg-red-50 text-red-700 font-bold' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100' ?> flex items-center gap-2">
                      <i data-lucide="qr-code" class="w-4 h-4"></i>
                      <span>Check-In</span>
@@ -148,6 +138,7 @@ $isAdmin = $user && (stripos($user['role'] ?? '', 'admin') !== false || ($user['
                     </a>
                 <?php endif; ?>
             </div>
+            </div>
         </div>
     </div>
 
@@ -160,13 +151,13 @@ $isAdmin = $user && (stripos($user['role'] ?? '', 'admin') !== false || ($user['
             if (!btn || !menu) return;
 
             btn.addEventListener('click', function() {
-                const isOpen = !menu.classList.contains('hidden');
+                const isOpen = menu.classList.contains('open');
                 if (isOpen) {
-                    menu.classList.add('hidden');
+                    menu.classList.remove('open');
                     if (openIcon) openIcon.classList.remove('hidden');
                     if (closeIcon) closeIcon.classList.add('hidden');
                 } else {
-                    menu.classList.remove('hidden');
+                    menu.classList.add('open');
                     if (openIcon) openIcon.classList.add('hidden');
                     if (closeIcon) closeIcon.classList.remove('hidden');
                 }

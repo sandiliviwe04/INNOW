@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/tailwind.css">
+    <link rel="preconnect" href="https://unpkg.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script>
         // Force a fresh server request whenever this page is restored from the
         // browser's back/forward cache (bfcache), instead of showing a stale,
@@ -64,7 +69,6 @@
                 if (!el) {
                     el = document.createElement('div');
                     el.id = 'innow-toast-container';
-                    el.style.cssText = 'position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:0.5rem;max-width:22rem;';
                     document.body.appendChild(el);
                 }
                 return el;
@@ -83,7 +87,7 @@
             function showToast(event) {
                 const container = ensureToastContainer();
                 const toast = document.createElement('div');
-                toast.style.cssText = 'background:#18181b;color:#fff;border-radius:0.75rem;padding:0.75rem 1rem;box-shadow:0 10px 25px rgba(0,0,0,0.25);font-family:inherit;font-size:0.8rem;display:flex;gap:0.6rem;align-items:flex-start;opacity:0;transform:translateX(1rem);transition:opacity 0.25s ease,transform 0.25s ease;';
+                toast.className = 'innow-toast';
 
                 let icon = '🔔';
                 let text = '';
@@ -99,13 +103,11 @@
                 container.appendChild(toast);
 
                 requestAnimationFrame(() => {
-                    toast.style.opacity = '1';
-                    toast.style.transform = 'translateX(0)';
+                    toast.classList.add('show');
                 });
 
                 setTimeout(() => {
-                    toast.style.opacity = '0';
-                    toast.style.transform = 'translateX(1rem)';
+                    toast.classList.remove('show');
                     setTimeout(() => toast.remove(), 300);
                 }, 6000);
             }
@@ -129,27 +131,36 @@
         })();
     </script>
     <?php endif; ?>
-    <title><?= htmlspecialchars($pageTitle ?? 'INNOW — Digital Attendance System') ?></title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#fef2f2',
-                            100: '#ffe1e1',
-                            500: '#ef4444',
-                            600: '#dc2626',
-                            700: '#b91c1c',
-                            900: '#7f1d1d',
-                        }
-                    }
-                }
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a[href]');
+            if (!link) return;
+            if (link.target === '_blank') return;
+            if (link.href.includes('#')) return;
+            if (link.getAttribute('download')) return;
+            if (link.getAttribute('role') === 'button' && !link.getAttribute('href')) return;
+
+            const linkPath = new URL(link.href, window.location.origin).pathname;
+            if (linkPath === window.location.pathname) return;
+
+            const overlay = document.getElementById('page-transition-overlay');
+            if (overlay) {
+                overlay.classList.add('active');
             }
-        }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const overlay = document.getElementById('page-transition-overlay');
+            if (overlay) {
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        overlay.classList.remove('active');
+                    });
+                });
+            }
+        });
     </script>
+    <title><?= htmlspecialchars($pageTitle ?? 'INNOW — Digital Attendance System') ?></title>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -160,6 +171,89 @@
         .font-mono {
             font-family: 'JetBrains Mono', monospace;
         }
+
+        #page-transition-overlay {
+          position: fixed;
+          inset: 0;
+          background: #fafafa;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.15s ease;
+          z-index: 99999;
+        }
+        #page-transition-overlay.active {
+          opacity: 1;
+          pointer-events: auto;
+        }
+
+        .mobile-nav-animate {
+          display: grid;
+          grid-template-rows: 0fr;
+          transition: grid-template-rows 0.3s ease, opacity 0.3s ease;
+          opacity: 0;
+        }
+        .mobile-nav-animate.open {
+          grid-template-rows: 1fr;
+          opacity: 1;
+        }
+        .mobile-nav-animate > div {
+          overflow: hidden;
+        }
+
+        .modal-backdrop {
+          opacity: 0;
+          transition: opacity 0.2s ease;
+        }
+        .modal-backdrop.modal-visible {
+          opacity: 1;
+        }
+        .modal-content {
+          opacity: 0;
+          transform: scale(0.95) translateY(8px);
+          transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .modal-visible .modal-content {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+
+        #innow-toast-container {
+          position: fixed;
+          top: 1rem;
+          right: 1rem;
+          z-index: 9999;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          max-width: 22rem;
+        }
+        .innow-toast {
+          background: #18181b;
+          color: #fff;
+          border-radius: 0.75rem;
+          padding: 0.75rem 1rem;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+          font-family: inherit;
+          font-size: 0.8rem;
+          display: flex;
+          gap: 0.6rem;
+          align-items: flex-start;
+          opacity: 0;
+          transform: translateX(1rem);
+          transition: opacity 0.25s ease, transform 0.25s ease;
+          will-change: transform, opacity;
+          transform: translateZ(0);
+        }
+        .innow-toast.show {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        #checkin-toast {
+          will-change: transform, opacity;
+          transform: translateZ(0);
+        }
     </style>
 </head>
 <body class="h-full bg-zinc-50 text-zinc-900 antialiased flex flex-col selection:bg-red-500 selection:text-white">
+    <!-- Page Transition Overlay -->
+    <div id="page-transition-overlay"></div>

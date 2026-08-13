@@ -101,8 +101,8 @@ require __DIR__ . '/../partials/nav.php';
 </main>
 
 <!-- Add Staff Modal -->
-<div id="add-staff-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
-    <div class="bg-white border border-zinc-200 rounded-2xl max-w-md w-full p-6 shadow-xl space-y-6">
+<div id="add-staff-modal" class="modal-backdrop fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="modal-content bg-white border border-zinc-200 rounded-2xl max-w-md w-full p-6 shadow-xl space-y-6">
         <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
             <h3 class="text-lg font-bold text-zinc-900">Register Staff Member</h3>
             <button onclick="closeAddStaffModal()" class="p-1 hover:bg-zinc-100 rounded-lg text-zinc-500">
@@ -160,8 +160,8 @@ require __DIR__ . '/../partials/nav.php';
 </div>
 
 <!-- Digital Badge Modal -->
-<div id="badge-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
-    <div class="bg-white border border-zinc-200 rounded-2xl max-w-sm w-full p-6 text-zinc-900 shadow-xl relative space-y-6">
+<div id="badge-modal" class="modal-backdrop fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="modal-content bg-white border border-zinc-200 rounded-2xl max-w-sm w-full p-6 text-zinc-900 shadow-xl relative space-y-6">
         <button onclick="closeBadgeModal()" class="absolute top-4 right-4 p-1.5 bg-zinc-100 hover:bg-zinc-200 rounded-lg text-zinc-500 cursor-pointer">
             <i data-lucide="x" class="w-4 h-4"></i>
         </button>
@@ -181,11 +181,27 @@ require __DIR__ . '/../partials/nav.php';
                 <p id="badge-dept" class="text-[11px] text-zinc-500">Department</p>
             </div>
 
-            <div class="bg-zinc-50 p-2.5 rounded-xl border border-zinc-200 flex justify-between items-center text-xs font-mono">
-                <span class="text-zinc-500">STAFF ID:</span>
-                <span id="badge-id" class="font-bold text-zinc-900">ID</span>
-                <span class="text-zinc-500 ml-2">PIN:</span>
-                <span id="badge-pin" class="font-bold text-emerald-700">PIN</span>
+            <div class="bg-zinc-50 p-3 rounded-xl border border-zinc-200 space-y-1 text-xs font-mono text-left">
+                <div class="flex justify-between text-zinc-600">
+                    <span>Staff ID:</span>
+                    <span id="badge-id" class="font-bold text-zinc-900">ID</span>
+                </div>
+                <div class="flex justify-between text-zinc-600">
+                    <span>Contact:</span>
+                    <span id="badge-phone" class="font-bold text-zinc-900">—</span>
+                </div>
+                <div class="flex justify-between text-zinc-600 gap-3">
+                    <span class="shrink-0">Email:</span>
+                    <span id="badge-email" class="font-bold text-zinc-900 text-right break-all">—</span>
+                </div>
+                <div class="flex justify-between text-zinc-600 gap-3">
+                    <span class="shrink-0">Address:</span>
+                    <span id="badge-address" class="font-bold text-zinc-900 text-right">—</span>
+                </div>
+                <div class="flex justify-between text-zinc-600">
+                    <span>Emergency:</span>
+                    <span id="badge-emergency" class="font-bold text-zinc-900">—</span>
+                </div>
             </div>
         </div>
 
@@ -197,8 +213,8 @@ require __DIR__ . '/../partials/nav.php';
 </div>
 
 <!-- Reset PIN Modal -->
-<div id="reset-pin-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
-    <div class="bg-white border border-zinc-200 rounded-2xl max-w-md w-full p-6 shadow-xl space-y-6">
+<div id="reset-pin-modal" class="modal-backdrop fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="modal-content bg-white border border-zinc-200 rounded-2xl max-w-md w-full p-6 shadow-xl space-y-6">
         <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
             <h3 class="text-lg font-bold text-zinc-900">Reset PIN</h3>
             <button onclick="closeResetPinModal()" class="p-1 hover:bg-zinc-100 rounded-lg text-zinc-500">
@@ -220,8 +236,8 @@ require __DIR__ . '/../partials/nav.php';
 </div>
 
 <!-- Edit Staff Modal -->
-<div id="edit-staff-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
-    <div class="bg-white border border-zinc-200 rounded-2xl max-w-md w-full p-6 shadow-xl space-y-6">
+<div id="edit-staff-modal" class="modal-backdrop fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="modal-content bg-white border border-zinc-200 rounded-2xl max-w-md w-full p-6 shadow-xl space-y-6">
         <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
             <h3 class="text-lg font-bold text-zinc-900">Edit Staff Details</h3>
             <button onclick="closeEditModal()" class="p-1 hover:bg-zinc-100 rounded-lg text-zinc-500">
@@ -260,9 +276,20 @@ require __DIR__ . '/../partials/nav.php';
 </div>
 
 <script>
-    function openAddStaffModal() { document.getElementById('add-staff-modal').classList.replace('hidden', 'flex'); }
-    function closeAddStaffModal() { document.getElementById('add-staff-modal').classList.replace('flex', 'hidden'); }
-    function closeBadgeModal() { document.getElementById('badge-modal').classList.replace('flex', 'hidden'); }
+    function openModal(id) {
+      const modal = document.getElementById(id);
+      modal.classList.replace('hidden', 'flex');
+      requestAnimationFrame(() => modal.classList.add('modal-visible'));
+    }
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+      modal.classList.remove('modal-visible');
+      modal.classList.replace('flex', 'hidden');
+    }
+
+    function openAddStaffModal() { openModal('add-staff-modal'); }
+    function closeAddStaffModal() { closeModal('add-staff-modal'); }
+    function closeBadgeModal() { closeModal('badge-modal'); }
 
     function viewBadge(jsonStr) {
         const stf = JSON.parse(jsonStr);
@@ -272,8 +299,11 @@ require __DIR__ . '/../partials/nav.php';
         document.getElementById('badge-role').innerText = stf.role;
         document.getElementById('badge-dept').innerText = stf.department;
         document.getElementById('badge-id').innerText = stf.id;
-        document.getElementById('badge-pin').innerText = stf.pin;
-        document.getElementById('badge-modal').classList.replace('hidden', 'flex');
+        document.getElementById('badge-phone').innerText = stf.phone || '—';
+        document.getElementById('badge-email').innerText = stf.email || '—';
+        document.getElementById('badge-address').innerText = stf.address || '—';
+        document.getElementById('badge-emergency').innerText = stf.emergency_contact || '—';
+        openModal('badge-modal');
     }
 
     async function handleCreateStaff(e) {
@@ -329,11 +359,11 @@ require __DIR__ . '/../partials/nav.php';
         document.getElementById('reset-pin-staff-id').value = id;
         document.getElementById('reset-pin-staff-name').innerText = name;
         document.getElementById('reset-pin-value').value = '';
-        document.getElementById('reset-pin-modal').classList.replace('hidden', 'flex');
+        openModal('reset-pin-modal');
     }
 
     function closeResetPinModal() {
-        document.getElementById('reset-pin-modal').classList.replace('flex', 'hidden');
+        closeModal('reset-pin-modal');
     }
 
     function openEditModal(jsonStr) {
@@ -344,11 +374,11 @@ require __DIR__ . '/../partials/nav.php';
         document.getElementById('edit-phone').value = stf.phone || '';
         document.getElementById('edit-emergency').value = stf.emergency_contact || '';
         document.getElementById('edit-address').value = stf.address || '';
-        document.getElementById('edit-staff-modal').classList.replace('hidden', 'flex');
+        openModal('edit-staff-modal');
     }
 
     function closeEditModal() {
-        document.getElementById('edit-staff-modal').classList.replace('flex', 'hidden');
+        closeModal('edit-staff-modal');
     }
 
     async function handleUpdateStaff(e) {
