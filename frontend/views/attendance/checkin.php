@@ -97,7 +97,21 @@ require __DIR__ . '/../partials/nav.php';
                 <p class="text-xs text-zinc-500">Instant direct check-in/out without needing a mobile camera</p>
             </div>
 
-            <!-- Staff Selection Dropdown -->
+            <!-- Staff Search & Selection Dropdown -->
+            <div class="space-y-2">
+                <label for="staff-search" class="block text-xs font-bold text-zinc-700 uppercase tracking-wider">Search Staff Member</label>
+                <div class="relative">
+                    <i data-lucide="search" class="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                    <input
+                        type="text"
+                        id="staff-search"
+                        oninput="filterStaffSelector()"
+                        placeholder="Type a name to filter the list below..."
+                        class="w-full pl-10 pr-4 py-2.5 border border-zinc-300 rounded-xl text-sm text-zinc-900 bg-white focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
+                    >
+                </div>
+            </div>
+
             <div class="space-y-2">
                 <label for="staff-selector" class="block text-xs font-bold text-zinc-700 uppercase tracking-wider">Select Staff Member</label>
                 <select id="staff-selector" onchange="onStaffSelected()" class="w-full px-4 py-3 border border-zinc-300 rounded-xl text-sm font-semibold text-zinc-900 bg-white focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none">
@@ -107,6 +121,7 @@ require __DIR__ . '/../partials/nav.php';
                         </option>
                     <?php endforeach; ?>
                 </select>
+                <p id="staff-search-no-match" class="hidden text-xs text-zinc-500">No staff members match your search.</p>
             </div>
 
             <!-- Selected Staff Card Preview -->
@@ -198,6 +213,33 @@ require __DIR__ . '/../partials/nav.php';
                 refreshQRPayload();
             }
         }, 1000);
+    }
+
+    function filterStaffSelector() {
+        const query = document.getElementById('staff-search').value.trim().toLowerCase();
+        const select = document.getElementById('staff-selector');
+        const options = Array.from(select.options);
+        let firstVisible = null;
+        let visibleCount = 0;
+
+        options.forEach((opt) => {
+            const name = (opt.getAttribute('data-name') || '').toLowerCase();
+            const matches = name.includes(query);
+            opt.hidden = !matches;
+            if (matches) {
+                visibleCount++;
+                if (!firstVisible) firstVisible = opt;
+            }
+        });
+
+        document.getElementById('staff-search-no-match').classList.toggle('hidden', visibleCount !== 0);
+
+        // If the currently selected staff member got filtered out, jump to the first match
+        const currentOpt = select.options[select.selectedIndex];
+        if (currentOpt && currentOpt.hidden && firstVisible) {
+            select.value = firstVisible.value;
+            onStaffSelected();
+        }
     }
 
     function onStaffSelected() {

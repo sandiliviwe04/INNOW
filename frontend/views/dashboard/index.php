@@ -6,6 +6,7 @@ require __DIR__ . '/../partials/nav.php';
 $onsiteCount = count(array_filter($allStaff, fn($s) => $s['status'] === 'ONSITE'));
 $breakCount = count(array_filter($allStaff, fn($s) => $s['status'] === 'BREAK'));
 $offsiteCount = count(array_filter($allStaff, fn($s) => $s['status'] === 'OFFSITE'));
+$isAdmin = $user && (stripos($user['role'] ?? '', 'admin') !== false || ($user['role'] ?? '') === 'System Administrator');
 ?>
 
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
@@ -75,7 +76,9 @@ $offsiteCount = count(array_filter($allStaff, fn($s) => $s['status'] === 'OFFSIT
                         <th class="py-3 px-4">Department & Role</th>
                         <th class="py-3 px-4">Contact & ICE</th>
                         <th class="py-3 px-4">Status</th>
+                        <?php if ($isAdmin): ?>
                         <th class="py-3 px-4 text-right">Quick Toggle</th>
+                        <?php endif; ?>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-200" id="roster-tbody">
@@ -113,11 +116,13 @@ $offsiteCount = count(array_filter($allStaff, fn($s) => $s['status'] === 'OFFSIT
                                     </span>
                                 <?php endif; ?>
                             </td>
+                            <?php if ($isAdmin): ?>
                             <td class="py-3.5 px-4 text-right">
                                 <button onclick="quickToggleStatus('<?= $stf['id'] ?>')" class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg text-[11px] font-bold cursor-pointer transition-colors shadow-xs">
                                     Toggle State
                                 </button>
                             </td>
+                            <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

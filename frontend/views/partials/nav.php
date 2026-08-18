@@ -24,10 +24,10 @@ $isAdmin = $user && (stripos($user['role'] ?? '', 'admin') !== false || ($user['
                      <span>Check-In</span>
                  </a>
 
-                 <a href="/docs?doc=user-guide" class="px-3 py-2 rounded-lg text-sm font-semibold transition-colors <?= $currentPath === '/docs' ? 'bg-red-50 text-red-700 font-bold' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100' ?> flex items-center gap-1.5">
+                 <!-- <a href="/docs?doc=user-guide" class="px-3 py-2 rounded-lg text-sm font-semibold transition-colors <?= $currentPath === '/docs' ? 'bg-red-50 text-red-700 font-bold' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100' ?> flex items-center gap-1.5">
                      <i data-lucide="book-open" class="w-4 h-4"></i>
-                     <span>Help</span>
-                 </a>
+                     <span>More info</span>
+                 </a> -->
 
                  <a href="/dashboard" class="px-3 py-2 rounded-lg text-sm font-semibold transition-colors <?= $currentPath === '/dashboard' ? 'bg-red-50 text-red-700 font-bold' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100' ?> flex items-center gap-1.5">
                      <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
@@ -52,6 +52,12 @@ $isAdmin = $user && (stripos($user['role'] ?? '', 'admin') !== false || ($user['
                  <a href="/announcements" class="px-3 py-2 rounded-lg text-sm font-semibold transition-colors <?= $currentPath === '/announcements' ? 'bg-red-50 text-red-700 font-bold' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100' ?> flex items-center gap-1.5">
                      <i data-lucide="megaphone" class="w-4 h-4"></i>
                      <span>Announcements</span>
+                 </a>
+
+
+                  <a href="/docs?doc=user-guide" class="px-3 py-2 rounded-lg text-sm font-semibold transition-colors <?= $currentPath === '/docs' ? 'bg-red-50 text-red-700 font-bold' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100' ?> flex items-center gap-1.5">
+                     <i data-lucide="book-open" class="w-4 h-4"></i>
+                     <span>About Us</span>
                  </a>
             </nav>
 
