@@ -221,6 +221,22 @@ $router->get('/announcements', function() use ($user, $csrfToken) {
     require __DIR__ . '/views/announcements/index.php';
 });
 
+$router->get('/payroll', function() use ($user, $csrfToken) {
+    \Innow\Middleware\AuthMiddleware::guard();
+    $isAdmin = $user && (stripos($user['role'] ?? '', 'admin') !== false || ($user['role'] ?? '') === 'System Administrator');
+    if (!$isAdmin) {
+        header('Location: /dashboard');
+        exit;
+    }
+    header('Cache-Control: no-cache, no-store, must-revalidate, private');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+    $allStaff = User::all();
+    require __DIR__ . '/views/payroll/index.php';
+});
+
+
+
 // JSON API Routes
 $router->post('/api/login', [\Innow\Controllers\AuthController::class, 'login']);
 $router->get('/api/checkin/qr-payload', [\Innow\Controllers\AttendanceController::class, 'getQRPayload']);
@@ -241,6 +257,21 @@ $router->get('/api/announcements', [\Innow\Controllers\AnnouncementController::c
 $router->get('/api/notifications/poll', [\Innow\Controllers\NotificationController::class, 'poll']);
 $router->post('/api/announcements', [\Innow\Controllers\AnnouncementController::class, 'store']);
 $router->post('/api/announcements/delete', [\Innow\Controllers\AnnouncementController::class, 'destroy']);
+$router->get('/api/payroll/schedules', [\Innow\Controllers\PayrollController::class, 'getSchedules']);
+$router->post('/api/payroll/schedules', [\Innow\Controllers\PayrollController::class, 'saveSchedule']);
+$router->get('/api/payroll/compensation', [\Innow\Controllers\PayrollController::class, 'getCompensation']);
+$router->post('/api/payroll/compensation', [\Innow\Controllers\PayrollController::class, 'saveCompensation']);
+$router->get('/api/payroll/report', [\Innow\Controllers\PayrollController::class, 'report']);
+$router->get('/api/payroll/history', [\Innow\Controllers\PayrollController::class, 'history']);
+
+// ========================================
+// Avatar Upload Endpoints (NEW) ✨
+// ========================================
+$router->post('/api/avatar/upload', [\Innow\Controllers\AvatarController::class, 'uploadAvatar']);
+$router->delete('/api/avatar/delete', [\Innow\Controllers\AvatarController::class, 'deleteAvatar']);
+$router->get('/api/avatar/:user_id', [\Innow\Controllers\AvatarController::class, 'getAvatar']);
+$router->post('/api/admin/avatar/upload', [\Innow\Controllers\AvatarController::class, 'uploadAvatarAsAdmin']);
+$router->delete('/api/admin/avatar/delete', [\Innow\Controllers\AvatarController::class, 'deleteAvatarAsAdmin']);
 
 // Dispatch Request using original requested URI
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
