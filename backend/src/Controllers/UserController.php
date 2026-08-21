@@ -71,7 +71,10 @@ class UserController {
 
         $this->validateCsrf();
 
-        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        // Multipart requests (used when a photo is attached) populate $_POST
+        // directly; plain JSON requests don't, so fall back to reading the
+        // raw body in that case.
+        $input = !empty($_POST) ? $_POST : (json_decode(file_get_contents('php://input'), true) ?? []);
         $id = trim($input['id'] ?? '');
 
         if (!$id) {
@@ -109,13 +112,54 @@ class UserController {
             return;
         }
 
-        $updated = User::update($id, [
+        $updateData = [
             'name' => trim($input['name']),
             'email' => trim($input['email']),
             'phone' => trim($input['phone'] ?? ''),
             'emergency_contact' => trim($input['emergency_contact'] ?? ''),
             'address' => trim($input['address'] ?? ''),
-        ]);
+        ];
+
+        // Handle an attached profile photo, if any.
+        if (!empty($_FILES['avatar']['tmp_name']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+            $allowedTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+            $mime = mime_content_type($_FILES['avatar']['tmp_name']);
+
+            if (!isset($allowedTypes[$mime])) {
+                ResponseHelper::error('Invalid image type. Please upload a JPG, PNG, or WEBP image.', 400);
+                return;
+            }
+
+            if ($_FILES['avatar']['size'] > 2 * 1024 * 1024) {
+                ResponseHelper::error('Image is too large. Maximum size is 2MB.', 400);
+                return;
+            }
+
+            $ext = $allowedTypes[$mime];
+            $filename = $id . '_' . time() . '.' . $ext;
+            $destDir = __DIR__ . '/../../../assets/avatars/';
+            if (!is_dir($destDir)) {
+                @mkdir($destDir, 0755, true);
+            }
+            $destPath = $destDir . $filename;
+
+            if (!move_uploaded_file($_FILES['avatar']['tmp_name'], $destPath)) {
+                ResponseHelper::error('Failed to save the uploaded photo. Please try again.', 500);
+                return;
+            }
+
+            // Clean up the old photo file, if one existed, to avoid orphaned files piling up.
+            if (!empty($target['avatar_url'])) {
+                $oldPath = __DIR__ . '/../../../' . ltrim($target['avatar_url'], '/');
+                if (is_file($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+
+            $updateData['avatar_url'] = '/assets/avatars/' . $filename;
+        }
+
+        $updated = User::update($id, $updateData);
 
         ResponseHelper::success(['user' => $updated], 'Staff details updated successfully.');
     }

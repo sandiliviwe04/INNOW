@@ -85,8 +85,12 @@ $isAdmin = $user && (stripos($user['role'] ?? '', 'admin') !== false || ($user['
                     <?php foreach ($allStaff as $stf): ?>
                         <tr class="hover:bg-zinc-50/80 transition-colors roster-row" data-name="<?= strtolower(htmlspecialchars($stf['name'])) ?>" data-user-id="<?= htmlspecialchars($stf['id']) ?>">
                             <td class="py-3.5 px-4 font-bold text-zinc-900 flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-full bg-zinc-900 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                                        <?= strtoupper(substr($stf['name'], 0, 1)) ?>
+                                    <div class="w-9 h-9 rounded-full bg-zinc-900 text-white flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
+                                        <?php if (!empty($stf['avatar_url'])): ?>
+                                            <img src="<?= htmlspecialchars($stf['avatar_url']) ?>" alt="" class="w-full h-full object-cover">
+                                        <?php else: ?>
+                                            <?= strtoupper(substr($stf['name'], 0, 1)) ?>
+                                        <?php endif; ?>
                                     </div>
                                 <div>
                                     <p class="font-extrabold text-sm text-zinc-900"><?= htmlspecialchars($stf['name']) ?></p>

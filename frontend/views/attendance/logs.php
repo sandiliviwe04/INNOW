@@ -18,6 +18,11 @@ require __DIR__ . '/../partials/nav.php';
         </div>
 
         <div class="flex items-center gap-3 w-full sm:w-auto">
+            <button id="import-csv-btn" class="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-900 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer border border-zinc-700">
+                <i data-lucide="upload" class="w-4 h-4"></i>
+                <span>Import CSV</span>
+            </button>
+            <input type="file" id="csv-file-input" class="hidden" accept=".csv">
             <button onclick="exportCSV()" class="px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer border border-zinc-200">
                 <i data-lucide="download" class="w-4 h-4"></i>
                 <span>Export CSV</span>
@@ -28,6 +33,9 @@ require __DIR__ . '/../partials/nav.php';
             </button>
         </div>
     </div>
+
+    <!-- Notification Area -->
+    <div id="notification" class="hidden rounded-xl p-4 mb-6 text-xs font-medium"></div>
 
     <!-- Audit Table -->
     <div class="bg-white rounded-2xl border border-zinc-200 shadow-xs overflow-hidden">
@@ -122,6 +130,73 @@ require __DIR__ . '/../partials/nav.php';
 </div>
 
 <script>
+    // CSRF Token for API requests
+    const csrfToken = '<?= $csrfToken ?? '' ?>';
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const importBtn = document.getElementById('import-csv-btn');
+        const fileInput = document.getElementById('csv-file-input');
+        const notification = document.getElementById('notification');
+
+        if (importBtn) {
+            importBtn.addEventListener('click', () => fileInput.click());
+        }
+
+        if (fileInput) {
+            fileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+                    showNotification('Please select a .csv file.', 'error');
+                    return;
+                }
+                uploadFile(file);
+            });
+        }
+    });
+
+    function uploadFile(file) {
+        const importBtn = document.getElementById('import-csv-btn');
+        const formData = new FormData();
+        formData.append('csv_file', file);
+        // Note: We use authFetch which should handle the CSRF token automatically.
+        // If not, you would add: formData.append('csrf_token', csrfToken);
+
+        showNotification('Uploading and processing CSV... Please wait.', 'info');
+        importBtn.disabled = true;
+        importBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+        // Assuming you have an `authFetch` helper that includes credentials and CSRF
+        authFetch('/api/attendance/import-csv', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message || 'CSV imported successfully! Refreshing...', 'success');
+                setTimeout(() => window.location.reload(), 2500);
+            } else {
+                let errorMessage = data.message || 'An error occurred during import.';
+                if (data.data && data.data.errors) {
+                    errorMessage += '<ul class="list-disc list-inside mt-2">' + data.data.errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
+                }
+                showNotification(errorMessage, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Upload error:', error);
+            showNotification('A network or server error occurred. Please check the console and try again.', 'error');
+        })
+        .finally(() => {
+            document.getElementById('csv-file-input').value = ''; // Reset file input
+            importBtn.disabled = false;
+            importBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        });
+    }
+
+    // --- Existing Functions ---
+
     function openManualModal() { document.getElementById('manual-modal').classList.replace('hidden', 'flex'); }
     function closeManualModal() { document.getElementById('manual-modal').classList.replace('flex', 'hidden'); }
 
@@ -197,6 +272,20 @@ require __DIR__ . '/../partials/nav.php';
         } catch (e) {
             console.error('Failed to refresh logs:', e);
         }
+    }
+
+    function showNotification(message, type) {
+        const notification = document.getElementById('notification');
+        notification.innerHTML = message;
+        notification.className = 'rounded-xl p-4 mb-6 text-xs font-medium '; // Reset classes
+        if (type === 'success') {
+            notification.classList.add('bg-emerald-50', 'text-emerald-800');
+        } else if (type === 'error') {
+            notification.classList.add('bg-red-50', 'text-red-800');
+        } else { // info
+            notification.classList.add('bg-blue-50', 'text-blue-800');
+        }
+        notification.classList.remove('hidden');
     }
 
     setInterval(refreshLogs, 30000);

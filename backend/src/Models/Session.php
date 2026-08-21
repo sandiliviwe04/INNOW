@@ -42,7 +42,7 @@ class Session {
     public static function findByToken(string $token): ?array {
         $db = Database::getConnection();
         $stmt = $db->prepare("
-            SELECT s.*, u.name, u.email, u.role, u.department, u.status
+            SELECT s.*, u.name, u.email, u.role, u.department, u.status, u.avatar_url
             FROM sessions s
             JOIN users u ON s.user_id = u.id
             WHERE s.token = :token AND s.expires_at > NOW()

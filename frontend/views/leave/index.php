@@ -27,6 +27,7 @@ require __DIR__ . '/../partials/nav.php';
                     <th class="py-3 px-4">Dates</th>
                     <th class="py-3 px-4">Days</th>
                     <th class="py-3 px-4">Reason</th>
+                    <th class="py-3 px-4">Attachment</th>
                     <th class="py-3 px-4">Status</th>
                     <th class="py-3 px-4">Reviewed By</th>
                     <?php if ($isAdmin): ?>
@@ -36,7 +37,7 @@ require __DIR__ . '/../partials/nav.php';
                 </thead>
                 <tbody class="divide-y divide-zinc-200" id="leaves-tbody">
                     <tr>
-                        <td colspan="<?= $isAdmin ? 8 : 7 ?>" class="py-8 text-center text-xs text-zinc-400">Loading leave requests...</td>
+                        <td colspan="<?= $isAdmin ? 9 : 8 ?>" class="py-8 text-center text-xs text-zinc-400">Loading leave requests...</td>
                     </tr>
                 </tbody>
             </table>
@@ -83,6 +84,10 @@ require __DIR__ . '/../partials/nav.php';
                 <label class="block font-bold text-zinc-700 uppercase mb-1">Reason</label>
                 <textarea id="leave-reason" rows="3" placeholder="Optional" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500"></textarea>
             </div>
+            <div>
+                <label class="block font-bold text-zinc-700 uppercase mb-1">Attach File (Optional)</label>
+                <input type="file" id="leave-attachment" accept="image/png, image/jpeg, application/pdf" class="w-full text-zinc-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 cursor-pointer">
+            </div>
 
             <button type="submit" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all cursor-pointer">
                 Submit Request
@@ -124,7 +129,7 @@ require __DIR__ . '/../partials/nav.php';
             const res = await authFetch('/api/leaves');
             const data = await res.json();
             if (!data.success) {
-                document.getElementById('leaves-tbody').innerHTML = `<tr><td colspan="7" class="py-8 text-center text-xs text-red-600">${data.message || 'Failed to load leave requests.'}</td></tr>`;
+                document.getElementById('leaves-tbody').innerHTML = `<tr><td colspan="<?= $isAdmin ? 9 : 8 ?>" class="py-8 text-center text-xs text-red-600">${data.message || 'Failed to load leave requests.'}</td></tr>`;
                 return;
             }
             const tbody = document.getElementById('leaves-tbody');
@@ -136,6 +141,12 @@ require __DIR__ . '/../partials/nav.php';
                     <td class="py-3.5 px-4 font-mono">${l.start_date} — ${l.end_date}</td>
                     <td class="py-3.5 px-4">${l.days_requested}</td>
                     <td class="py-3.5 px-4 text-zinc-600">${l.reason || '-'}</td>
+                    <td class="py-3.5 px-4">
+                        ${l.attachment_path ? `
+                            <a href="${l.attachment_path}" target="_blank" class="text-red-600 hover:underline font-bold flex items-center gap-1">
+                                <i data-lucide="paperclip" class="w-3 h-3"></i> View
+                            </a>` : '-'}
+                    </td>
                     <td class="py-3.5 px-4">
                         <span class="px-2 py-1 rounded-full text-[10px] font-bold ${l.status === 'PENDING' ? 'bg-amber-100 text-amber-800' : (l.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800')}">
                             ${l.status}
@@ -156,7 +167,7 @@ require __DIR__ . '/../partials/nav.php';
             `).join('');
             if (window.lucide) lucide.createIcons();
         } catch (e) {
-            document.getElementById('leaves-tbody').innerHTML = `<tr><td colspan="<?= $isAdmin ? 8 : 7 ?>" class="py-8 text-center text-xs text-red-600">Failed to load leave requests: ${e.message}</td></tr>`;
+            document.getElementById('leaves-tbody').innerHTML = `<tr><td colspan="<?= $isAdmin ? 9 : 8 ?>" class="py-8 text-center text-xs text-red-600">Failed to load leave requests: ${e.message}</td></tr>`;
         }
     }
 
@@ -167,15 +178,30 @@ require __DIR__ . '/../partials/nav.php';
         const endDate = document.getElementById('leave-end').value;
         const daysRequested = parseInt(document.getElementById('leave-days').value) || 0;
         const reason = document.getElementById('leave-reason').value;
+        const attachmentFile = document.getElementById('leave-attachment').files[0];
 
-        const body = { leave_type: leaveType, start_date: startDate, end_date: endDate, days_requested: daysRequested, reason };
         if (leaveType === 'Other' && !reason.trim()) {
             alert('Please provide a reason for your leave request.');
             return;
         }
 
+        const formData = new FormData();
+        formData.append('leave_type', leaveType);
+        formData.append('start_date', startDate);
+        formData.append('end_date', endDate);
+        formData.append('days_requested', daysRequested);
+        formData.append('reason', reason);
+        if (attachmentFile) {
+            formData.append('attachment', attachmentFile);
+        }
+
         try {
-            const res = await authFetch('/api/leaves', { method: 'POST', body: JSON.stringify(body) });
+            // Use fetch directly to avoid authFetch's default JSON content-type
+            const res = await fetch('/api/leaves', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRF-Token': getCsrfToken() }
+            });
             const data = await res.json();
             if (data.success) {
                 closeLeaveModal();
@@ -184,7 +210,7 @@ require __DIR__ . '/../partials/nav.php';
                 alert(data.message || 'Failed to submit leave request.');
             }
         } catch (e) {
-            alert('Error submitting leave request.');
+            alert('Error submitting leave request: ' + e.message);
         }
     }
 

@@ -20,17 +20,19 @@ class AttendanceRecord {
     public static function create(array $data): array {
         $db = Database::getConnection();
         $id = 'LOG-' . sprintf('%04d', rand(1000, 9999));
+        $timestamp = $data['timestamp'] ?? date('Y-m-d H:i:s');
         $synced = isset($data['synced_to_db']) ? (int)$data['synced_to_db'] : 1;
 
         $stmt = $db->prepare("
             INSERT INTO attendance_records (id, user_id, action, timestamp, method, notes)
-            VALUES (:id, :user_id, :action, NOW(), :method, :notes)
+            VALUES (:id, :user_id, :action, :timestamp, :method, :notes)
         ");
 
         $stmt->execute([
             'id' => $id,
             'user_id' => $data['user_id'],
             'action' => $data['action'],
+            'timestamp' => $timestamp,
             'method' => $data['method'] ?? 'BUTTON',
             'notes' => $data['notes'] ?? '',
         ]);

@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     department VARCHAR(50) NOT NULL,
     phone VARCHAR(50) NOT NULL,
     emergency_contact VARCHAR(100),
+    address TEXT,
     status VARCHAR(20) DEFAULT 'OFFSITE',
     avatar_url TEXT,
     qr_code VARCHAR(100),

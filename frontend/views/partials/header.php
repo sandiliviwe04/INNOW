@@ -33,8 +33,12 @@
             return metaToken || (typeof window !== 'undefined' ? (window.csrfToken || '') : '');
         }
         async function authFetch(url, options = {}) {
+            // When sending a file (FormData), the browser must set its own
+            // multipart Content-Type with boundary — forcing application/json
+            // here would corrupt the upload, so skip it in that case.
+            const isFormData = options.body instanceof FormData;
             const headers = {
-                'Content-Type': 'application/json',
+                ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
                 'X-CSRF-Token': getCsrfToken(),
                 ...(options.headers || {})
             };
@@ -53,6 +57,22 @@
             // error bodies (success:false + message) that callers should read
             // and display directly, instead of a generic error.
             return res;
+        }
+
+        // Shared animated modal open/close helpers, used across every page
+        // (Staff Directory, Leave, Announcements, etc.) so modals fade/scale
+        // in and out consistently instead of an instant hidden/flex toggle.
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (!modal) return;
+            modal.classList.replace('hidden', 'flex');
+            requestAnimationFrame(() => modal.classList.add('modal-visible'));
+        }
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (!modal) return;
+            modal.classList.remove('modal-visible');
+            modal.classList.replace('flex', 'hidden');
         }
     </script>
     <?php if (!empty($user)): ?>

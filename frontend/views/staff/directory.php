@@ -21,14 +21,32 @@ require __DIR__ . '/../partials/nav.php';
         <?php endif; ?>
     </div>
 
+    <!-- Search -->
+    <div class="relative max-w-md">
+        <i data-lucide="search" class="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+        <input
+            type="text"
+            id="staff-search-input"
+            oninput="filterStaffDirectory()"
+            placeholder="Search staff by name..."
+            class="w-full pl-10 pr-4 py-2.5 border border-zinc-300 rounded-xl text-sm text-zinc-900 bg-white focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
+        >
+    </div>
+
+    <p id="staff-search-empty" class="hidden text-sm text-zinc-500 text-center py-10">No staff members match your search.</p>
+
     <!-- Staff Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div id="staff-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <?php foreach ($allStaff as $stf): ?>
-            <div class="bg-white rounded-2xl border border-zinc-200 p-6 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-md transition-all">
+            <div class="staff-card bg-white rounded-2xl border border-zinc-200 p-6 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-md transition-all" data-staff-name="<?= htmlspecialchars(strtolower($stf['name'])) ?>">
                 <div class="flex items-start justify-between">
                     <div class="flex items-center gap-3.5">
-                        <div class="w-12 h-12 rounded-xl bg-zinc-900 text-white flex items-center justify-center text-sm font-bold shrink-0">
-                            <?= strtoupper(substr($stf['name'], 0, 1)) ?>
+                        <div class="w-12 h-12 rounded-xl bg-zinc-900 text-white flex items-center justify-center text-sm font-bold shrink-0 overflow-hidden">
+                            <?php if (!empty($stf['avatar_url'])): ?>
+                                <img src="<?= htmlspecialchars($stf['avatar_url']) ?>" alt="" class="w-full h-full object-cover">
+                            <?php else: ?>
+                                <?= strtoupper(substr($stf['name'], 0, 1)) ?>
+                            <?php endif; ?>
                         </div>
                         <div>
                             <h3 class="font-extrabold text-base text-zinc-900 leading-tight"><?= htmlspecialchars($stf['name']) ?></h3>
@@ -245,8 +263,20 @@ require __DIR__ . '/../partials/nav.php';
             </button>
         </div>
 
-        <form onsubmit="handleUpdateStaff(event)" class="space-y-4 text-xs">
+        <form onsubmit="handleUpdateStaff(event)" class="space-y-4 text-xs" enctype="multipart/form-data">
             <input type="hidden" id="edit-staff-id" value="">
+
+            <div class="flex flex-col items-center gap-2 pb-2">
+                <div class="relative">
+                    <div id="edit-avatar-preview" class="w-20 h-20 rounded-2xl bg-zinc-900 text-white flex items-center justify-center text-2xl font-bold overflow-hidden border-2 border-zinc-200">?</div>
+                    <label for="edit-avatar-input" class="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center cursor-pointer shadow-md border-2 border-white">
+                        <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+                    </label>
+                </div>
+                <input type="file" id="edit-avatar-input" accept="image/png,image/jpeg,image/webp" class="hidden" onchange="previewEditAvatar(event)">
+                <p class="text-[10px] text-zinc-400">Click the camera icon to change photo (JPG/PNG/WEBP, max 2MB)</p>
+            </div>
+
             <div>
                 <label class="block font-bold text-zinc-700 uppercase mb-1">Full Name</label>
                 <input type="text" id="edit-name" required placeholder="e.g. Sipho Nkosi" class="w-full px-3 py-2 border border-zinc-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
@@ -276,6 +306,21 @@ require __DIR__ . '/../partials/nav.php';
 </div>
 
 <script>
+    function filterStaffDirectory() {
+        const query = document.getElementById('staff-search-input').value.trim().toLowerCase();
+        const cards = document.querySelectorAll('#staff-cards-grid .staff-card');
+        let visibleCount = 0;
+
+        cards.forEach((card) => {
+            const name = card.getAttribute('data-staff-name') || '';
+            const matches = name.includes(query);
+            card.style.display = matches ? '' : 'none';
+            if (matches) visibleCount++;
+        });
+
+        document.getElementById('staff-search-empty').classList.toggle('hidden', visibleCount !== 0);
+    }
+
     function openModal(id) {
       const modal = document.getElementById(id);
       modal.classList.replace('hidden', 'flex');
@@ -294,7 +339,9 @@ require __DIR__ . '/../partials/nav.php';
     function viewBadge(jsonStr) {
         const stf = JSON.parse(jsonStr);
         const imgEl = document.getElementById('badge-img-placeholder');
-        imgEl.innerHTML = stf.name.charAt(0).toUpperCase();
+        imgEl.innerHTML = stf.avatar_url
+            ? `<img src="${stf.avatar_url}" class="w-full h-full object-cover rounded-2xl">`
+            : stf.name.charAt(0).toUpperCase();
         document.getElementById('badge-name').innerText = stf.name;
         document.getElementById('badge-role').innerText = stf.role;
         document.getElementById('badge-dept').innerText = stf.department;
@@ -366,6 +413,21 @@ require __DIR__ . '/../partials/nav.php';
         closeModal('reset-pin-modal');
     }
 
+    function previewEditAvatar(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Image is too large. Maximum size is 2MB.');
+            e.target.value = '';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+            document.getElementById('edit-avatar-preview').innerHTML = `<img src="${ev.target.result}" class="w-full h-full object-cover">`;
+        };
+        reader.readAsDataURL(file);
+    }
+
     function openEditModal(jsonStr) {
         const stf = JSON.parse(jsonStr);
         document.getElementById('edit-staff-id').value = stf.id;
@@ -374,6 +436,11 @@ require __DIR__ . '/../partials/nav.php';
         document.getElementById('edit-phone').value = stf.phone || '';
         document.getElementById('edit-emergency').value = stf.emergency_contact || '';
         document.getElementById('edit-address').value = stf.address || '';
+        document.getElementById('edit-avatar-input').value = '';
+        const preview = document.getElementById('edit-avatar-preview');
+        preview.innerHTML = stf.avatar_url
+            ? `<img src="${stf.avatar_url}" class="w-full h-full object-cover">`
+            : (stf.name || '?').charAt(0).toUpperCase();
         openModal('edit-staff-modal');
     }
 
@@ -383,19 +450,22 @@ require __DIR__ . '/../partials/nav.php';
 
     async function handleUpdateStaff(e) {
         e.preventDefault();
-        const body = {
-            id: document.getElementById('edit-staff-id').value,
-            name: document.getElementById('edit-name').value,
-            email: document.getElementById('edit-email').value,
-            phone: document.getElementById('edit-phone').value,
-            emergency_contact: document.getElementById('edit-emergency').value,
-            address: document.getElementById('edit-address').value,
-        };
+        const formData = new FormData();
+        formData.append('id', document.getElementById('edit-staff-id').value);
+        formData.append('name', document.getElementById('edit-name').value);
+        formData.append('email', document.getElementById('edit-email').value);
+        formData.append('phone', document.getElementById('edit-phone').value);
+        formData.append('emergency_contact', document.getElementById('edit-emergency').value);
+        formData.append('address', document.getElementById('edit-address').value);
+        const avatarFile = document.getElementById('edit-avatar-input').files[0];
+        if (avatarFile) {
+            formData.append('avatar', avatarFile);
+        }
 
         try {
             const res = await authFetch('/api/staff/update', {
                 method: 'POST',
-                body: JSON.stringify(body)
+                body: formData
             });
             const data = await res.json();
             if (data.success) {

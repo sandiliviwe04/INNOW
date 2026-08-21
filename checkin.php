@@ -73,8 +73,8 @@ require __DIR__ . '/../partials/nav.php';
             </div>
         </div>
         <?php else: ?>
-        <!-- Staff view: full-width QR scanner prompt, no admin panels here -->
-        <div class="lg:col-span-12 bg-white rounded-2xl border border-zinc-200 p-6 sm:p-8 shadow-xs flex flex-col items-center justify-center text-center space-y-6">
+        <!-- LEFT COLUMN: QR Scanner Link for Non-Admins -->
+        <div class="lg:col-span-7 bg-white rounded-2xl border border-zinc-200 p-6 sm:p-8 shadow-xs flex flex-col items-center justify-center text-center space-y-6">
             <div class="bg-zinc-50 border-2 border-dashed border-zinc-300 p-8 rounded-2xl flex flex-col items-center justify-center max-w-sm w-full">
                 <i data-lucide="qr-code" class="w-12 h-12 text-zinc-300 mb-4"></i>
                 <p class="text-sm font-bold text-zinc-500">Scan QR to Check In/Out</p>
@@ -87,8 +87,7 @@ require __DIR__ . '/../partials/nav.php';
         </div>
         <?php endif; ?>
 
-        <?php if ($isAdmin): ?>
-        <!-- RIGHT COLUMN: One-Click Button Check-In & Staff Selector (Admin Only) -->
+        <!-- RIGHT COLUMN: One-Click Button Check-In & Staff Selector -->
         <div class="lg:col-span-5 bg-white rounded-2xl border border-zinc-200 p-6 sm:p-8 shadow-xs space-y-6">
             <div class="border-b border-zinc-100 pb-4">
                 <h2 class="text-lg font-bold text-zinc-900 flex items-center gap-2">
@@ -117,7 +116,7 @@ require __DIR__ . '/../partials/nav.php';
                 <label for="staff-selector" class="block text-xs font-bold text-zinc-700 uppercase tracking-wider">Select Staff Member</label>
                 <select id="staff-selector" onchange="onStaffSelected()" class="w-full px-4 py-3 border border-zinc-300 rounded-xl text-sm font-semibold text-zinc-900 bg-white focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none">
                     <?php foreach ($allStaff as $stf): ?>
-                        <option value="<?= htmlspecialchars($stf['id']) ?>" data-status="<?= $stf['status'] ?>" data-name="<?= htmlspecialchars($stf['name']) ?>" data-role="<?= htmlspecialchars($stf['role']) ?>" data-dept="<?= htmlspecialchars($stf['department']) ?>" data-avatar="<?= htmlspecialchars($stf['avatar_url'] ?? '') ?>">
+                        <option value="<?= htmlspecialchars($stf['id']) ?>" data-status="<?= $stf['status'] ?>" data-name="<?= htmlspecialchars($stf['name']) ?>" data-role="<?= htmlspecialchars($stf['role']) ?>" data-dept="<?= htmlspecialchars($stf['department']) ?>">
                             <?= htmlspecialchars($stf['name']) ?> (<?= htmlspecialchars($stf['department']) ?>) — Currently <?= $stf['status'] ?>
                         </option>
                     <?php endforeach; ?>
@@ -127,7 +126,7 @@ require __DIR__ . '/../partials/nav.php';
 
             <!-- Selected Staff Card Preview -->
             <div id="selected-staff-card" class="bg-zinc-50 p-4 rounded-xl border border-zinc-200 flex items-center gap-4">
-                <div id="staff-card-avatar" class="w-12 h-12 rounded-xl bg-zinc-900 text-white flex items-center justify-center text-sm font-bold shrink-0 overflow-hidden">
+                <div id="staff-card-avatar" class="w-12 h-12 rounded-xl bg-zinc-900 text-white flex items-center justify-center text-sm font-bold shrink-0">
                     A
                 </div>
                 <div class="flex-1">
@@ -163,7 +162,6 @@ require __DIR__ . '/../partials/nav.php';
                 <p>Every check-in event triggers real-time verification and stores directly in MySQL.</p>
             </div>
         </div>
-        <?php endif; ?>
     </div>
 </main>
 
@@ -184,7 +182,6 @@ require __DIR__ . '/../partials/nav.php';
     updateCheckinClock();
 
     async function refreshQRPayload() {
-        if (!document.getElementById('qr-token-preview')) return; // Admin-only panel not present for staff
         try {
             const res = await authFetch('/api/checkin/qr-payload');
             const data = await res.json();
@@ -247,7 +244,6 @@ require __DIR__ . '/../partials/nav.php';
 
     function onStaffSelected() {
         const select = document.getElementById('staff-selector');
-        if (!select) return; // Not present on the staff (non-admin) view
         const opt = select.options[select.selectedIndex];
         const status = opt.getAttribute('data-status');
         const name = opt.getAttribute('data-name');
@@ -257,10 +253,7 @@ require __DIR__ . '/../partials/nav.php';
 
         document.getElementById('staff-card-name').innerText = name;
         document.getElementById('staff-card-dept').innerText = dept + ' • ' + role;
-        const avatarEl = document.getElementById('staff-card-avatar');
-        avatarEl.innerHTML = avatar
-            ? `<img src="${avatar}" class="w-full h-full object-cover">`
-            : (name ? name.charAt(0).toUpperCase() : 'U');
+        document.getElementById('staff-card-avatar').innerText = name ? name.charAt(0).toUpperCase() : 'U';
 
         const badge = document.getElementById('staff-card-badge');
         const mainBtn = document.getElementById('primary-one-click-btn');

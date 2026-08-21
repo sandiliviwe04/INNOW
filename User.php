@@ -72,33 +72,23 @@ class User {
 
     public static function update(string $id, array $data): ?array {
         $db = Database::getConnection();
-
-        $fields = [
-            'name = :name',
-            'email = :email',
-            'phone = :phone',
-            'emergency_contact = :emergency_contact',
-            'address = :address',
-        ];
-        $params = [
+        $stmt = $db->prepare("
+            UPDATE users
+            SET name = :name,
+                email = :email,
+                phone = :phone,
+                emergency_contact = :emergency_contact,
+                address = :address
+            WHERE id = :id
+        ");
+        $stmt->execute([
             'name' => $data['name'],
             'email' => $data['email'],
             'phone' => $data['phone'] ?? '',
             'emergency_contact' => $data['emergency_contact'] ?? '',
             'address' => $data['address'] ?? '',
             'id' => $id,
-        ];
-
-        // Only touch avatar_url when a new photo was actually uploaded —
-        // otherwise a plain details edit would silently wipe the existing photo.
-        if (array_key_exists('avatar_url', $data) && $data['avatar_url'] !== null) {
-            $fields[] = 'avatar_url = :avatar_url';
-            $params['avatar_url'] = $data['avatar_url'];
-        }
-
-        $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = :id";
-        $stmt = $db->prepare($sql);
-        $stmt->execute($params);
+        ]);
         return self::find($id);
     }
 
